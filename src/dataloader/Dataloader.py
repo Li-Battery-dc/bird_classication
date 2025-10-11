@@ -47,7 +47,7 @@ class DataLoader:
             self.class_dirs = self.class_dirs[:class_limit]
         
         # map class names to indices
-        self.class_to_label = {cls_name: (idx + 1) for idx, cls_name in enumerate(self.class_dirs)}
+        self.class_to_label = {cls_name: idx for idx, cls_name in enumerate(self.class_dirs)}
         self.label_to_class = {idx: cls_name for cls_name, idx in self.class_to_label.items()}
         
         # collect all data paths
@@ -122,10 +122,11 @@ class DataLoader:
             try:
                 image = Image.open(data_path).convert('RGB')
                 if self.transform:
-                    image = self.transform(image)
+                    image = self.transform(image) # 处理变换为torch Tensor
                 else:
-                    # 默认转换为numpy数组
+                    # 默认转换为numpy数组并统一大小
                     image = np.array(image)
+                    image = np.resize(image, (224, 224, 3))
 
                 # # 中位数填充nan值
                 # for c in range(image.shape[2]):
@@ -184,10 +185,10 @@ class DataLoader:
             data_list.append(data)
             labels_list.append(label)
 
-        data_array = np.vstack(data_list)
+        data_array = np.stack(data_list)
         labels_array = np.array(labels_list)
 
-        print("Loaded data and labels:")
+        print(f"Loaded {self.split} data and labels:")
         print(f"data size: {data_array.shape}")
         print(f"label size: {labels_array.shape}")
         print("\n")
@@ -210,25 +211,29 @@ def demo_usage():
     data_root = '/home/stu12/homework/MLPR/data'
     
     # 创建数据加载器
-    loader = DataLoader(data_root, split='train', mode='feature')
+    # loader = DataLoader(data_root, split='train', mode='feature')
 
-    # 获取单个样本
-    features, label = loader[0]
-    # print(features)
-    print(f"特征形状: {features.shape}")
-    print(f"特征类型: {type(features)}")
-    print(f"标签: {label} ({loader.get_class_name(label)})")
+    # # 获取单个样本
+    # features, label = loader[0]
+    # # print(features)
+    # print(f"特征形状: {features.shape}")
+    # print(f"特征类型: {type(features)}")
+    # print(f"标签: {label} ({loader.get_class_name(label)})")
 
-    # # 批量获取特征
-    # print("\n=== 批量特征加载 ===")
-    # datas, labels = loader.get_data_and_labels()
-    # print(f"所有特征形状: {datas.shape}")
-    # print(f"所有标签形状: {labels.shape}")
-    # print(f"标签分布: {np.bincount(labels)}")
-
-    # # 统计datas中包含nan的数量：
-    # nan_count = np.isnan(datas).sum()
-    # print(f"特征数据中包含 NaN 的比例: {nan_count } / {datas.shape[0]} * {datas.shape[1]}")
+    import torchvision.transforms as transforms
+    train_transform = transform = transforms.Compose([
+            transforms.RandomResizedCrop(224), # 224 * 224
+            transforms.RandomHorizontalFlip(),
+            transforms.ColorJitter(brightness=0.2, contrast=0.2, saturation=0.2),
+            transforms.ToTensor(),
+            transforms.Normalize([0.485, 0.456, 0.406],
+                                [0.229, 0.224, 0.225])
+        ])
+    image_loader = DataLoader(data_root, split='train', mode='image', transform=train_transform)
+    images, labels = image_loader.get_data_and_labels(num_samples=10)
+    print(f"图像形状: {images.shape}")
+    print(f"图像类型: {type(images)}")
+    print(f"标签: {labels} ({[image_loader.get_class_name(label) for label in labels]})")
 
 if __name__ == "__main__":
     demo_usage()

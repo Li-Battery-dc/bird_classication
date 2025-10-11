@@ -2,10 +2,10 @@ from svm.Classifier import SVMClassifier
 from dataloader.Dataloader import DataLoader
 import random
 
-def svm_method():
-    data_root = '/home/stu12/homework/MLPR/data'
+def svm_method(data_root='/home/stu12/homework/MLPR/data'):
+    
     train_loader = DataLoader(data_root, split='train', mode='feature')
-    classifier = SVMClassifier(kernel='linear', C=100.0)
+    classifier = SVMClassifier(kernel='linear', C=1.0)
 
     random.seed(42)
     target_labels = random.sample(range(1, len(train_loader.class_dirs)+1), 10)
