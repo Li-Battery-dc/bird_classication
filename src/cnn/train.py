@@ -1,6 +1,7 @@
 import torch
 import torch.nn as nn
 from torchvision import transforms
+import time
 
 def train(model, images, labels, criterion, optimizer, device, batch_size=256):
 
@@ -41,6 +42,7 @@ def train_model(model, data_loader, device, num_epochs=100):
     optimizer = torch.optim.Adam(model.parameters(), lr=1e-4)
 
     for epoch in range(num_epochs):
+        
         train_loss, train_acc = train(model, images, labels, criterion, optimizer, device)
         if (epoch + 1) % 10 == 0 or epoch == 0:
-            print(f"Epoch [{epoch+1}/{num_epochs}], Loss: {train_loss:.4f}, Accuracy: {train_acc*100:.2f}%")
+            print(f"Epoch [{epoch+1}/{num_epochs}], time: {time.time()} \n Loss: {train_loss:.4f}, Accuracy: {train_acc*100:.2f}%\n")
