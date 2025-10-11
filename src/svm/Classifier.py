@@ -1,4 +1,3 @@
-from dataloader import DataLoader
 from sklearn import svm
 import numpy as np
 

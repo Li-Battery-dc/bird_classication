@@ -1,5 +1,5 @@
-from svm import SVMClassifier
-from dataloader import DataLoader
+from Classifier import SVMClassifier
+from dataloader.Dataloader import DataLoader
 import random
 import numpy as np
 import matplotlib.pyplot as plt
