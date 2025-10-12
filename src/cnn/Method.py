@@ -35,10 +35,10 @@ def cnnMethod(data_root='/home/stu12/homework/MLPR/data/', weight_root='/home/st
 
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     model = CNNNetwork(num_classes=num_classes).to(device)
-    model.load_state_dict(torch.load(osp.join(weight_root, 'test_1.pth')))
+    # model.load_state_dict(torch.load(osp.join(weight_root, 'test_1.pth')))
     print("training on ", device)
-    train_model(model, train_loader, device, num_epochs=100)
-    torch.save(model.state_dict(), osp.join(weight_root, 'test_2.pth'))
+    train_model(model, train_loader, device, num_epochs=100, batch_size=320)
+    torch.save(model.state_dict(), osp.join(weight_root, 'test_resnet.pth'))
 
 
 if __name__ == "__main__":

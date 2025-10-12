@@ -160,12 +160,7 @@ class DataLoader:
         获取批次迭代器，类似于标准PyTorch DataLoader的行为
         每次迭代返回一个batch的数据
         
-        Args:
-            batch_size: 批次大小
-            shuffle: 是否随机打乱数据
-            
-        Yields:
-            (batch_data, batch_labels) 元组
+        使用yield返回迭代器
         """
         indices = list(range(len(self.samples)))
         if shuffle:

@@ -3,6 +3,7 @@ import torch.nn as nn
 from torchvision import transforms
 import random
 import datetime
+import os
 
 def train_epoch_with_iterator(model, data_loader, criterion, optimizer, device, batch_size=256):
     """
@@ -39,15 +40,25 @@ def train_epoch_with_iterator(model, data_loader, criterion, optimizer, device, 
     accuracy = correct / total_samples
     return avg_loss, accuracy
 
-def train_model(model, data_loader, device, num_epochs=100, batch_size=256):
+def train_model(model, data_loader, device, log_dir="/home/stu12/homework/MLPR/result/cnn/", num_epochs=100, batch_size=256):
     
     criterion = torch.nn.CrossEntropyLoss()
     optimizer = torch.optim.Adam(model.parameters(), lr=1e-4)
 
-    for epoch in range(num_epochs):
-    
-        train_loss, train_acc = train_epoch_with_iterator(model, data_loader, criterion, optimizer, device, batch_size)
-        
-        if (epoch + 1) % 10 == 0 or epoch == 0:
-            print(f"Epoch [{epoch+1}/{num_epochs}], time: {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')} \n"
-                  f"Loss: {train_loss:.4f}, Accuracy: {train_acc*100:.2f}%\n")
+    if not os.path.exists(log_dir):
+        os.makedirs(log_dir)
+    log_file = os.path.join(log_dir, f"train_log_{datetime.datetime.now().strftime('%Y%m%d_%H%M%S')}.txt")
+
+    with open(log_file, "w") as log:
+        log.write("Training log at {}\n".format(datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')))
+        for epoch in range(num_epochs):
+            train_loss, train_acc = train_epoch_with_iterator(model, data_loader, criterion, optimizer, device, batch_size)
+            
+            log_message = (f"Epoch [{epoch+1}/{num_epochs}], time: {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')} \n"
+                           f"Loss: {train_loss:.4f}, Accuracy: {train_acc*100:.2f}%\n")
+            
+            # 打印到控制台
+            print(log_message)
+            
+            # 写入日志文件
+            log.write(log_message)
