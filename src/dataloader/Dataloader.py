@@ -165,6 +165,7 @@ class DataLoader:
         Returns:
             (data(image/feature), labels) 两个numpy数组
         """
+        print("loading data and labels...")
         data_list = []
         labels_list = []
         filtered_samples = self.samples
