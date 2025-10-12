@@ -91,7 +91,7 @@ class DataLoader:
         获取单个样本
         
         Args:
-            idx: 样本索引
+            sample: (data_path, label) 元组
             
         Returns:
             (data, label) where data can be features or image
@@ -154,6 +154,43 @@ class DataLoader:
     def get_class_names(self) -> List[str]:
         """获取所有类别名称"""
         return self.class_dirs
+
+    def get_batch_iterator(self, batch_size: int = 32, shuffle: bool = True):
+        """
+        获取批次迭代器，类似于标准PyTorch DataLoader的行为
+        每次迭代返回一个batch的数据
+        
+        Args:
+            batch_size: 批次大小
+            shuffle: 是否随机打乱数据
+            
+        Yields:
+            (batch_data, batch_labels) 元组
+        """
+        indices = list(range(len(self.samples)))
+        if shuffle:
+            random.shuffle(indices)
+        
+        for i in range(0, len(indices), batch_size):
+            batch_indices = indices[i:i+batch_size]
+            
+            batch_data = []
+            batch_labels = []
+            
+            for idx in batch_indices:
+                data, label = self.load_sample(self.samples[idx])
+                batch_data.append(data)
+                batch_labels.append(label)
+            
+            # 转换为合适的格式
+            if len(batch_data) > 0:
+                if isinstance(batch_data[0], torch.Tensor):
+                    batch_data = torch.stack(batch_data)
+                else:
+                    batch_data = np.stack(batch_data)
+                batch_labels = np.array(batch_labels)
+                
+            yield batch_data, batch_labels
 
     def get_data_and_labels(self, num_samples=None, target_labels=None, target_class_names=None) -> Tuple[np.ndarray, np.ndarray]:
         """
@@ -222,7 +259,7 @@ def demo_usage():
     # print(f"标签: {label} ({loader.get_class_name(label)})")
 
     import torchvision.transforms as transforms
-    train_transform = transform = transforms.Compose([
+    train_transform  = transforms.Compose([
             transforms.RandomResizedCrop(224), # 224 * 224
             transforms.RandomHorizontalFlip(),
             transforms.ColorJitter(brightness=0.2, contrast=0.2, saturation=0.2),
