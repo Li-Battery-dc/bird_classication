@@ -9,6 +9,7 @@ class CNNNetwork(nn.Module):
             nn.Conv2d(in_channels=3, out_channels=64, kernel_size=7, stride=2, padding=3, bias=False),
             nn.BatchNorm2d(64),
             nn.ReLU(),
+            nn.MaxPool2d(kernel_size=3, stride=2, padding=1)
         )
         self.resblocks = nn.Sequential(
             ResBlock(64, 64),

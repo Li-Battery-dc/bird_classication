@@ -51,9 +51,9 @@ def load_checkpoint(checkpoint_path, model, optimizer):
 
 def train_model(model, data_loader, device, ckpt_load_path=None, result_dir="/home/stu12/homework/MLPR/result/cnn/", num_epochs=100, batch_size=256):
     
-    criterion = FocalLoss(num_classes=200, gamma=2.0, smoothing=0.1).to(device)
-    optimizer = SGD(model.parameters(), lr=0.01, momentum=0.9, weight_decay=5e-4)
-    lr_scheduler = LR_Scheduler(optimizer, total_epochs=num_epochs, min_lr=1e-6)
+    criterion = FocalLoss(num_classes=200, warmup_epoch=100, gamma=2.0, smoothing=0.1).to(device)
+    optimizer = SGD(model.parameters(), lr=0.02, momentum=0.9, weight_decay=5e-4)
+    lr_scheduler = LR_Scheduler(optimizer, warmup_epochs=50, total_epochs=num_epochs, min_lr=1e-6)
 
     if ckpt_load_path is not None and os.path.exists(ckpt_load_path):
         model, optimizer, start_epoch = load_checkpoint(ckpt_load_path, model, optimizer)
@@ -74,17 +74,17 @@ def train_model(model, data_loader, device, ckpt_load_path=None, result_dir="/ho
         for epoch in range(start_epoch, num_epochs):
             train_loss, train_acc = train_epoch_with_iterator(model, data_loader, criterion, optimizer, device, batch_size)
             lr_scheduler.step(epoch)
+            criterion.gamma_schedule(epoch)
             
             log_message = (f"Epoch [{epoch+1}/{num_epochs}], time: {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')} \n"
                            f"Loss: {train_loss:.4f}, Accuracy: {train_acc*100:.2f}%\n")
             
             # 打印到控制台
             print(log_message)
+            # 写入日志文件
+            log.write(log_message)
             
-
-            if (epoch + 1) % 100 == 0:
-                # 写入日志文件
-                log.write(log_message)
+            if (epoch + 1) % 50 == 0:
                 # 保存ckpts
                 checkpoint_path = os.path.join(ckpt_dir, f"checkpoint_epoch_{epoch+1}.pth")
                 torch.save({
