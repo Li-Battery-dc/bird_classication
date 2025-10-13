@@ -40,18 +40,36 @@ def train_epoch_with_iterator(model, data_loader, criterion, optimizer, device, 
     accuracy = correct / total_samples
     return avg_loss, accuracy
 
-def train_model(model, data_loader, device, log_dir="/home/stu12/homework/MLPR/result/cnn/", num_epochs=100, batch_size=256):
+def load_checkpoint(checkpoint_path, model, optimizer):
+
+    checkpoint = torch.load(checkpoint_path)
+    model.load_state_dict(checkpoint['model_state_dict'])
+    optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
+    start_epoch = checkpoint['epoch']
+    return model, optimizer, start_epoch
+
+def train_model(model, data_loader, device, ckpt_load_path=None, result_dir="/home/stu12/homework/MLPR/result/cnn/", num_epochs=100, batch_size=256):
     
     criterion = torch.nn.CrossEntropyLoss()
     optimizer = torch.optim.Adam(model.parameters(), lr=1e-4)
 
+    if ckpt_load_path is not None and os.path.exists(ckpt_load_path):
+        model, optimizer, start_epoch = load_checkpoint(ckpt_load_path, model, optimizer)
+        print(f"Resuming training from epoch {start_epoch}")
+    else:
+        start_epoch = 0
+    
+    log_dir = os.path.join(result_dir, "logs")
+    ckpt_dir = os.path.join(result_dir, "ckpts", f"train_{datetime.datetime.now().strftime('%Y%m%d_%H%M%S')}")
     if not os.path.exists(log_dir):
         os.makedirs(log_dir)
+    if not os.path.exists(ckpt_dir):
+        os.makedirs(ckpt_dir)
     log_file = os.path.join(log_dir, f"train_log_{datetime.datetime.now().strftime('%Y%m%d_%H%M%S')}.txt")
 
     with open(log_file, "w") as log:
         log.write("Training log at {}\n".format(datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')))
-        for epoch in range(num_epochs):
+        for epoch in range(start_epoch, num_epochs):
             train_loss, train_acc = train_epoch_with_iterator(model, data_loader, criterion, optimizer, device, batch_size)
             
             log_message = (f"Epoch [{epoch+1}/{num_epochs}], time: {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')} \n"
@@ -62,3 +80,13 @@ def train_model(model, data_loader, device, log_dir="/home/stu12/homework/MLPR/r
             
             # 写入日志文件
             log.write(log_message)
+
+            if (epoch + 1) % 100 == 0:
+                checkpoint_path = os.path.join(ckpt_dir, f"checkpoint_epoch_{epoch+1}.pth")
+                torch.save({
+                    'epoch': epoch + 1,
+                    'model_state_dict': model.state_dict(),
+                    'optimizer_state_dict': optimizer.state_dict(),
+                    'loss': train_loss,
+                    'accuracy': train_acc
+                }, checkpoint_path)
