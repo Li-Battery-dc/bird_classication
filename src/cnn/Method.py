@@ -47,8 +47,7 @@ def validate(weight_path, data_root='/home/stu12/homework/MLPR/data/', num_class
 
     val_loader = DataLoader(data_root, split='val', mode='image', transform=val_transform)
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    criterion = torch.nn.CrossEntropyLoss()
-    val_loss, val_acc = validate_model(val_loader, criterion, device, state_dict_path=weight_path, num_classes=num_classes)
+    val_loss, val_acc = validate_model(val_loader, device, state_dict_path=weight_path, num_classes=num_classes)
     print(f"Validation Loss: {val_loss:.4f}, Validation Accuracy: {val_acc*100:.2f}%")
 
 def cnnMethod(mode, save_pth_filename,data_root='/home/stu12/homework/MLPR/data/', weight_root='/home/stu12/homework/MLPR/result/cnn/weights', num_classes=200):

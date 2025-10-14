@@ -171,7 +171,6 @@ def validation_ckpt_and_visulize(ckpts_dir, data_root, num_classes=200, save_dir
             # 直接传递 checkpoint 路径给 validate_model
             val_loss, val_acc = validate_model(
                 val_loader, 
-                criterion, 
                 device, 
                 state_dict_path=ckpt_path,  # 传递文件路径
                 num_classes=num_classes
@@ -244,7 +243,7 @@ def validation_ckpt_and_visulize(ckpts_dir, data_root, num_classes=200, save_dir
     print("="*60)
 
 
-def compare_training_and_validation(log_file_path, ckpts_dir, data_root, num_classes=200, save_dir=None):
+def compare_training_and_validation(log_file_path, ckpts_dir, data_root, num_classes=200, save_dir="/home/stu12/homework/MLPR/result/cnn/vis_images/"):
     """
     对比训练和验证的 loss 和 accuracy 曲线
     
@@ -304,7 +303,6 @@ def compare_training_and_validation(log_file_path, ckpts_dir, data_root, num_cla
             # 直接传递 checkpoint 路径给 validate_model
             val_loss, val_acc = validate_model(
                 val_loader, 
-                criterion, 
                 device, 
                 state_dict_path=ckpt_path,  # 传递文件路径
                 num_classes=num_classes
@@ -377,10 +375,10 @@ def visualizes_all(log_file, ckpts_dir,
     # 基础可视化保存目录
     vis_base_dir = os.path.join(result_dir, "vis_images")
     
-    # 1. 可视化训练日志
-    if os.path.exists(log_file):
-        print("Visualizing training log...")
-        visualize_training_log(log_file, save_dir=vis_base_dir)
+    # 1. 单独可视化训练日志
+    # if os.path.exists(log_file):
+    #     print("Visualizing training log...")
+    #     visualize_training_log(log_file, save_dir=vis_base_dir)
     
     # 2. 可视化 checkpoint 验证结果
     if os.path.exists(ckpts_dir):

@@ -3,7 +3,7 @@ import torch
 import torch.nn as nn
 from torchvision import transforms
 
-def validate_model(data_loader, criterion, device, state_dict_path, num_classes=200):
+def validate_model(data_loader, device, state_dict_path, num_classes=200):
 
     # 加载模型
     model = CNNNetwork(num_classes=num_classes)
@@ -23,6 +23,7 @@ def validate_model(data_loader, criterion, device, state_dict_path, num_classes=
     model.eval()
 
     # 计算准确率
+    criterion = nn.CrossEntropyLoss() # 评估用简单交叉熵损失
     total_loss = 0.0
     correct = 0
     all_labels = []
