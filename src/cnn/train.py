@@ -49,18 +49,19 @@ def load_checkpoint(checkpoint_path, model, optimizer):
     start_epoch = checkpoint['epoch']
     return model, optimizer, start_epoch
 
-def train_model(model, data_loader, device, ckpt_load_path=None, result_dir="/home/stu12/homework/MLPR/result/cnn/", num_epochs=100, batch_size=256):
-    
-    criterion = FocalLoss(num_classes=200, warmup_epoch=100, target_gamma=2.0, smoothing=0.1).to(device)
+def train_model(model, data_loader, device, ckpt_load_path=None, result_dir="/home/stu12/homework/MLPR/result/cnn/", num_epochs=1000, batch_size=256):
+
+    warmup_epochs = num_epochs // 5
+    criterion = FocalLoss(num_classes=200, warmup_epoch=warmup_epochs, target_gamma=2.0, smoothing=0.1).to(device)
     optimizer = SGD(model.parameters(), lr=0.02, momentum=0.9, weight_decay=5e-4)
-    lr_scheduler = LR_Scheduler(optimizer, warmup_epochs=50, total_epochs=num_epochs, min_lr=1e-6)
+    lr_scheduler = LR_Scheduler(optimizer, warmup_epochs=warmup_epochs, total_epochs=num_epochs, min_lr=1e-6)
 
     if ckpt_load_path is not None and os.path.exists(ckpt_load_path):
         model, optimizer, start_epoch = load_checkpoint(ckpt_load_path, model, optimizer)
         print(f"Resuming training from epoch {start_epoch}")
     else:
         start_epoch = 0
-    
+        
     log_dir = os.path.join(result_dir, "logs")
     ckpt_dir = os.path.join(result_dir, "ckpts", f"train_{datetime.datetime.now().strftime('%Y%m%d_%H%M%S')}")
     if not os.path.exists(log_dir):
