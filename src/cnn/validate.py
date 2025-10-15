@@ -1,7 +1,6 @@
 from .Network import CNNNetwork
+from .Loss import FocalLoss
 import torch
-import torch.nn as nn
-from torchvision import transforms
 
 def validate_model(data_loader, device, state_dict_path, num_classes=200):
 
@@ -22,8 +21,11 @@ def validate_model(data_loader, device, state_dict_path, num_classes=200):
     model.to(device)
     model.eval()
 
-    # 计算准确率
-    criterion = nn.CrossEntropyLoss() # 评估用简单交叉熵损失
+    # 使用相同的FocalLoss
+    # 进行验证时不做warmup，直接使用目标gamma
+    criterion = FocalLoss(num_classes=num_classes, target_gamma=2.0, smoothing=0.1)
+    criterion.gamma = criterion.target_gamma
+
     total_loss = 0.0
     correct = 0
     all_labels = []

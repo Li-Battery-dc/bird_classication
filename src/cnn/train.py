@@ -6,7 +6,7 @@ import os
 from .Optimizer import SGD, LR_Scheduler
 from .Loss import FocalLoss
 
-def train_epoch_with_iterator(model, data_loader, criterion, optimizer, lr_scheduler, device, batch_size=256):
+def train_epoch_with_iterator(model, data_loader, criterion, optimizer, device, batch_size=256):
     """
     支持batch加载和打乱的train方法
     """
@@ -49,10 +49,20 @@ def load_checkpoint(checkpoint_path, model, optimizer):
     start_epoch = checkpoint['epoch']
     return model, optimizer, start_epoch
 
-def train_model(model, data_loader, device, ckpt_load_path=None, result_dir="/home/stu12/homework/MLPR/result/cnn/", num_epochs=1000, batch_size=256):
+def train_model(model, data_loader, device, 
+                ckpt_load_path=None, result_dir="/home/stu12/homework/MLPR/result/cnn/", 
+                enable_freeze=True, freeze_epoch_ratio=0.7,
+                enable_warmup=True, warmup_ratio=0.2,
+                num_epochs=1000, batch_size=256):
+    """
+    训练模型,可选使用渐进式冻结策略，以及warmup策略
+    
+    """
 
-    warmup_epochs = num_epochs // 5
-    criterion = FocalLoss(num_classes=200, warmup_epoch=warmup_epochs, target_gamma=2.0, smoothing=0.1).to(device)
+    warmup_epochs = int(num_epochs * warmup_ratio) if enable_warmup else None
+    freeze_start_epoch = int(num_epochs * freeze_epoch_ratio) if enable_freeze else num_epochs + 1
+    
+    criterion = FocalLoss(num_classes=200, warmup_epoch=warmup_epochs, target_gamma=2.0, smoothing=0.1)
     optimizer = SGD(model.parameters(), lr=0.02, momentum=0.9, weight_decay=5e-4)
     lr_scheduler = LR_Scheduler(optimizer, warmup_epochs=warmup_epochs, total_epochs=num_epochs, min_lr=1e-6)
 
@@ -72,14 +82,29 @@ def train_model(model, data_loader, device, ckpt_load_path=None, result_dir="/ho
 
     with open(log_file, "w") as log:
         log.write("Training log at {}\n".format(datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')))
+        log.write(f"Freeze strategy: {'Enabled' if enable_freeze else 'Disabled'}\n")
+        if enable_freeze:
+            log.write(f"Freeze starts at epoch {freeze_start_epoch}\n")
+        log.write("-" * 80 + "\n")
+        
         for epoch in range(start_epoch, num_epochs):
+            # 在指定epoch开始进入冻结深训练
+            if enable_freeze and epoch == freeze_start_epoch:
+                # 冻结模型层
+                model.freeze_partial()
+                trainable_param_list = [p for p in model.parameters() if p.requires_grad]
+                optimizer.update_param_groups(trainable_param_list)
+                # 增强FocalLoss的gamma,更关注难样本
+                criterion.target_gamma = 3.0
+            
             train_loss, train_acc = train_epoch_with_iterator(model, data_loader, criterion, optimizer, device, batch_size)
             lr_scheduler.step(epoch)
             criterion.gamma_schedule(epoch)
             
             current_lr = optimizer.param_groups[0]['lr']
+            freeze_status = "partial frozen" if enable_freeze and epoch >= freeze_start_epoch else "Full"
 
-            log_message = (f"Epoch [{epoch+1}/{num_epochs}], time: {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')} \n"
+            log_message = (f"Epoch [{epoch+1}/{num_epochs}] [{freeze_status}], time: {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')} \n"
                            f"Loss: {train_loss:.4f}, Accuracy: {train_acc*100:.2f}%, Learning Rate: {current_lr:.6f}\n")
 
             # 打印到控制台

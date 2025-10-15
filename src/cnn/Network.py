@@ -34,6 +34,19 @@ class CNNNetwork(nn.Module):
         x = self.avgpool(x)
         x = self.classifier(x)
         return x
+
+    def freeze_partial(self):
+        '''冻结前2个resblock 和 cov'''
+        for param in self.cov.parameters():
+            param.requires_grad = False
+        for i in range(2):
+            for param in self.resblocks[i].parameters():
+                param.requires_grad = False
+
+    def unfreeze(self):
+        """解冻所有层"""
+        for param in self.parameters():
+            param.requires_grad = True
     
 class ResBlock(nn.Module):
     def __init__(self, in_channels, out_channels, stride=1, use_drop=False, drop_prob=0.1, block_size=7):

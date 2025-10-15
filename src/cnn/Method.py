@@ -10,7 +10,11 @@ from torchvision import transforms
 from .train import train_model
 from .validate import validate_model
 
-def train(weight_save_path, ckpt_load_path=None, data_root='/home/stu12/homework/MLPR/data/', num_classes=200, num_epochs=1000, batch_size=512):
+def train(weight_save_path, ckpt_load_path=None, 
+          data_root='/home/stu12/homework/MLPR/data/', 
+          enable_freeze=True, freeze_epoch_ratio=0.7,
+          enable_warmup=True, warmup_ratio=0.2,
+          num_classes=200, num_epochs=1000, batch_size=512):
 
     # 防止过拟合
     train_transform = transforms.Compose([
@@ -31,9 +35,17 @@ def train(weight_save_path, ckpt_load_path=None, data_root='/home/stu12/homework
     print("training on ", device)
     if ckpt_load_path is not None:
         print(f"Resuming training from checkpoint: {ckpt_load_path}")
-        train_model(model, train_loader, device, ckpt_load_path=ckpt_load_path, num_epochs=num_epochs, batch_size=batch_size)
+        train_model(model, train_loader, device,
+                    ckpt_load_path=ckpt_load_path,
+                    enable_freeze=enable_freeze, freeze_epoch_ratio=freeze_epoch_ratio,
+                    enable_warmup=enable_warmup, warmup_ratio=warmup_ratio,
+                    num_epochs=num_epochs, batch_size=batch_size)
     else:
-        train_model(model, train_loader, device, ckpt_load_path=None, num_epochs=num_epochs, batch_size=batch_size)
+        train_model(model, train_loader, device,
+                    ckpt_load_path=None,
+                    enable_freeze=enable_freeze, freeze_epoch_ratio=freeze_epoch_ratio,
+                    enable_warmup=enable_warmup, warmup_ratio=warmup_ratio, 
+                    num_epochs=num_epochs, batch_size=batch_size)
     torch.save(model.state_dict(), weight_save_path)
 
 def validate(weight_path, data_root='/home/stu12/homework/MLPR/data/', num_classes=200):
