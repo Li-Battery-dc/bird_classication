@@ -63,7 +63,7 @@ def train_model(model, data_loader, device,
     freeze_start_epoch = int(num_epochs * freeze_epoch_ratio) if enable_freeze else num_epochs + 1
     
     criterion = FocalLoss(num_classes=200, warmup_epoch=warmup_epochs, target_gamma=2.0, smoothing=0.1)
-    optimizer = SGD(model.parameters(), lr=0.02, momentum=0.9, weight_decay=5e-4)
+    optimizer = SGD(model.parameters(), lr=0.025, momentum=0.9, weight_decay=5e-4)
     lr_scheduler = LR_Scheduler(optimizer, warmup_epochs=warmup_epochs, total_epochs=num_epochs, min_lr=1e-6)
 
     if ckpt_load_path is not None and os.path.exists(ckpt_load_path):
@@ -88,14 +88,18 @@ def train_model(model, data_loader, device,
         log.write("-" * 80 + "\n")
         
         for epoch in range(start_epoch, num_epochs):
-            # 在指定epoch开始进入冻结深训练
+            # 在指定epoch开始进入冻结深训练，更针对难样本
             if enable_freeze and epoch == freeze_start_epoch:
-                # 冻结模型层
+                # 冻结模型前4层resblock和cov
                 model.freeze_partial()
                 trainable_param_list = [p for p in model.parameters() if p.requires_grad]
                 optimizer.update_param_groups(trainable_param_list)
-                # 增强FocalLoss的gamma,更关注难样本
-                criterion.target_gamma = 3.0
+                
+                # 学习率调整，冻结参数后，降低学习率避免破坏已学习特征
+                lr_scheduler.adjust_lr(scale_factor=0.2)
+                
+                # 平滑过渡gamma: 从2.0逐渐增加到3.0，用50个epoch过渡
+                criterion.set_target_gamma(new_gamma=3.0, current_epoch=epoch, transition_epochs=50)
             
             train_loss, train_acc = train_epoch_with_iterator(model, data_loader, criterion, optimizer, device, batch_size)
             lr_scheduler.step(epoch)

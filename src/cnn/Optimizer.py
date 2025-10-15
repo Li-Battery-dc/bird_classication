@@ -91,6 +91,20 @@ class SGD:
         for key in state_keys_to_remove:
             del self.state[key]
 
+    # 同步torch.optim的接口用于ckpt保存
+    def state_dict(self):
+        return {
+            'state': self.state,
+            'param_groups': self.param_groups
+        }
+
+    def load_state_dict(self, state_dict):
+        self.state = state_dict['state']
+        # 只恢复超参数，不恢复params（由model管理）
+        for i, group in enumerate(self.param_groups):
+            group.update({k: v for k, v in state_dict['param_groups'][i].items() 
+                        if k != 'params'})
+
 # 余弦退火学习率调度器
 class LR_Scheduler:
     def __init__(self, optimizer, warmup_epochs=0, total_epochs=1000, min_lr=1e-6):
@@ -105,8 +119,7 @@ class LR_Scheduler:
         for i, group in enumerate(self.optimizer.param_groups):
             initial_lr = self.initial_lrs[i]
             if epoch < self.warmup_epochs:
-                # Warmup: 固定初始学习率
-                new_lr = initial_lr
+                new_lr = initial_lr * (epoch + 1) / self.warmup_epochs  # 线性增长
             else:
                 # Cosine Annealing: 从 warmup 结束后开始退火
                 # 调整 epoch 偏移，使退火从 warmup_epochs 开始
@@ -116,3 +129,14 @@ class LR_Scheduler:
                     1 + math.cos(math.pi * adjusted_epoch / adjusted_total)
                 )
             group['lr'] = new_lr
+    
+    def adjust_lr(self, scale_factor):
+        """
+        平滑调整学习率，用于冻结策略
+        scale_factor: 缩放因子，例如 0.5 表示减半
+        """
+        for group in self.param_groups:
+            group['lr'] *= scale_factor
+        # 同步更新 initial_lrs，使得后续余弦退火基于新的学习率
+        for i in range(len(self.initial_lrs)):
+            self.initial_lrs[i] *= scale_factor

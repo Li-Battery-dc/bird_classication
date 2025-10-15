@@ -36,10 +36,13 @@ class CNNNetwork(nn.Module):
         return x
 
     def freeze_partial(self):
-        '''冻结前2个resblock 和 cov'''
+        '''
+        冻结前4个resblock 和 cov, 只训练后面的层
+        大约冻结了50%的参数
+        '''
         for param in self.cov.parameters():
             param.requires_grad = False
-        for i in range(2):
+        for i in range(4):
             for param in self.resblocks[i].parameters():
                 param.requires_grad = False
 

@@ -10,15 +10,36 @@ class FocalLoss:
         self.target_gamma = target_gamma
         self.smoothing = smoothing
         self.warmup_epoch = warmup_epoch
+        # 用于平滑过渡到调整target_gamma的情况
+        self.transition_start_epoch = None
+        self.transition_epochs = 50  # 过渡期长度
+        self.old_target_gamma = target_gamma
+
+    def set_target_gamma(self, new_gamma, current_epoch, transition_epochs=50):
+        """平滑过渡到新的target_gamma，避免跳变"""
+        self.old_target_gamma = self.target_gamma
+        self.target_gamma = new_gamma
+        self.transition_start_epoch = current_epoch
+        self.transition_epochs = transition_epochs
 
     # warmup阶段，解决初期下降过慢
     def gamma_schedule(self, current_epoch):
+        # 计算当前应该用的target_gamma（处理过渡期）
+        current_target = self.target_gamma
+        if self.transition_start_epoch is not None:
+            epochs_since_transition = current_epoch - self.transition_start_epoch
+            if 0 <= epochs_since_transition < self.transition_epochs:
+                # 线性插值过渡
+                alpha = epochs_since_transition / self.transition_epochs
+                current_target = self.old_target_gamma + alpha * (self.target_gamma - self.old_target_gamma)
+        
+        # 计算gamma
         if self.warmup_epoch is not None and current_epoch < self.warmup_epoch:
-            progress =  (current_epoch / self.warmup_epoch)
-            rate = (math.exp(progress) - 1) / (math.exp(1) - 1) # 指数增长, 前期用小的gamma
+            progress = (current_epoch / self.warmup_epoch)
+            rate = (math.exp(progress) - 1) / (math.exp(1) - 1)  # 指数增长
         else:
             rate = 1.0
-        self.gamma = rate * self.target_gamma
+        self.gamma = rate * current_target
 
     
     def __call__(self, logits, targets):

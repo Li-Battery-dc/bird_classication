@@ -12,7 +12,7 @@ from .validate import validate_model
 
 def train(weight_save_path, ckpt_load_path=None, 
           data_root='/home/stu12/homework/MLPR/data/', 
-          enable_freeze=True, freeze_epoch_ratio=0.7,
+          enable_freeze=True, freeze_epoch_ratio=0.75,
           enable_warmup=True, warmup_ratio=0.2,
           num_classes=200, num_epochs=1000, batch_size=512):
 
@@ -61,18 +61,3 @@ def validate(weight_path, data_root='/home/stu12/homework/MLPR/data/', num_class
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     val_loss, val_acc = validate_model(val_loader, device, state_dict_path=weight_path, num_classes=num_classes)
     print(f"Validation Loss: {val_loss:.4f}, Validation Accuracy: {val_acc*100:.2f}%")
-
-def cnnMethod(mode, save_pth_filename,data_root='/home/stu12/homework/MLPR/data/', weight_root='/home/stu12/homework/MLPR/result/cnn/weights', num_classes=200):
-    if mode == 'train':
-        if not os.path.exists(weight_root):
-            os.makedirs(weight_root)
-        weight_save_path = osp.join(weight_root, save_pth_filename)
-        train(weight_save_path, data_root, num_classes)
-    elif mode == 'validate':
-        weight_path = osp.join(weight_root, save_pth_filename)
-        validate(weight_path, data_root, num_classes)
-    else:
-        raise ValueError("Mode should be 'train' or 'validate'")
-
-if __name__ == "__main__":
-    cnnMethod()
