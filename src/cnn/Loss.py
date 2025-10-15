@@ -1,12 +1,10 @@
 import torch
-import torch.nn as nn
 import torch.nn.functional as F
 import math
 
 # 添加focal_weight 和label smoothing改善过拟合
-class FocalLoss(nn.Module):
+class FocalLoss:
     def __init__(self, num_classes, warmup_epoch=None, target_gamma=2.0, smoothing=0.1):
-        super(FocalLoss, self).__init__()
         self.num_classes = num_classes
         self.gamma = 0.0
         self.target_gamma = target_gamma
@@ -17,12 +15,14 @@ class FocalLoss(nn.Module):
     def gamma_schedule(self, current_epoch):
         if self.warmup_epoch is not None and current_epoch < self.warmup_epoch:
             progress =  (current_epoch / self.warmup_epoch)
-            rate = (math.exp(progress) - 1) / (math.exp(1) - 1)
+            rate = (math.exp(progress) - 1) / (math.exp(1) - 1) # 指数增长, 前期用小的gamma
         else:
             rate = 1.0
         self.gamma = rate * self.target_gamma
 
-    def forward(self, logits, targets):
+    
+    def __call__(self, logits, targets):
+        '''call方法兼容函数式调用：loss = criterion(outputs, batch_labels)'''
 
         log_probs = F.log_softmax(logits, dim=-1)
         
