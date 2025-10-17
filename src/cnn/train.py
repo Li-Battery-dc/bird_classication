@@ -58,7 +58,6 @@ def train_model(model, data_loader, device,
     训练模型,可选使用渐进式冻结策略，以及warmup策略
     
     """
-
     warmup_epochs = int(num_epochs * warmup_ratio) if enable_warmup else None
     freeze_start_epoch = int(num_epochs * freeze_epoch_ratio) if enable_freeze else num_epochs + 1
     
@@ -66,7 +65,7 @@ def train_model(model, data_loader, device,
     optimizer = SGD(model.parameters(), lr=0.025, momentum=0.9, weight_decay=5e-4)
     lr_scheduler = LR_Scheduler(optimizer, warmup_epochs=warmup_epochs, total_epochs=num_epochs, min_lr=1e-6)
 
-    if ckpt_load_path is not None and os.path.exists(ckpt_load_path):
+    if ckpt_load_path is not None:
         model, optimizer, start_epoch = load_checkpoint(ckpt_load_path, model, optimizer)
         print(f"Resuming training from epoch {start_epoch}")
     else:
@@ -96,10 +95,10 @@ def train_model(model, data_loader, device,
                 optimizer.update_param_groups(trainable_param_list)
                 
                 # 学习率调整，冻结参数后，降低学习率避免破坏已学习特征
-                lr_scheduler.adjust_lr(scale_factor=0.2)
-                
-                # 平滑过渡gamma: 从2.0逐渐增加到3.0，用50个epoch过渡
-                criterion.set_target_gamma(new_gamma=3.0, current_epoch=epoch, transition_epochs=50)
+                lr_scheduler.adjust_lr(scale_factor=0.05) #初始学习率较大，冻结后大幅降低
+
+                # transtition: 平滑过渡gamma: 从2.0逐渐增加到3.0
+                criterion.set_target_gamma(new_gamma=3.0, current_epoch=epoch, transition_epochs=20)
             
             train_loss, train_acc = train_epoch_with_iterator(model, data_loader, criterion, optimizer, device, batch_size)
             lr_scheduler.step(epoch)

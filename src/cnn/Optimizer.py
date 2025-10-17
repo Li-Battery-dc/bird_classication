@@ -119,7 +119,7 @@ class LR_Scheduler:
         for i, group in enumerate(self.optimizer.param_groups):
             initial_lr = self.initial_lrs[i]
             if epoch < self.warmup_epochs:
-                new_lr = initial_lr * (epoch + 1) / self.warmup_epochs  # 线性增长
+                new_lr = initial_lr # 保持较大值加速收敛
             else:
                 # Cosine Annealing: 从 warmup 结束后开始退火
                 # 调整 epoch 偏移，使退火从 warmup_epochs 开始
@@ -130,13 +130,18 @@ class LR_Scheduler:
                 )
             group['lr'] = new_lr
     
+    def set_lr(self, new_lr):
+        """
+        直接设置学习率, 用于冻结后策略
+        """
+        for group in self.optimizer.param_groups:
+            group['lr'] = new_lr
+        for i in range(len(self.initial_lrs)):
+            self.initial_lrs[i] = new_lr
+    
     def adjust_lr(self, scale_factor):
         """
-        平滑调整学习率，用于冻结策略
+        调整学习率，用于冻结策略
         scale_factor: 缩放因子，例如 0.5 表示减半
         """
-        for group in self.param_groups:
-            group['lr'] *= scale_factor
-        # 同步更新 initial_lrs，使得后续余弦退火基于新的学习率
-        for i in range(len(self.initial_lrs)):
-            self.initial_lrs[i] *= scale_factor
+        self.set_lr(self.initial_lrs[0] * scale_factor)
