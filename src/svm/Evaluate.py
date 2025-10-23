@@ -1,4 +1,4 @@
-from Classifier import SVMClassifier
+from .Classifier import SVMClassifier
 from dataloader.Dataloader import DataLoader
 import random
 import numpy as np

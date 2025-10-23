@@ -167,6 +167,47 @@ def build_parser() -> argparse.ArgumentParser:
         default="/home/stu12/homework/MLPR/data",
         help="Dataset root directory",
     )
+    svm_parser.add_argument(
+        "--kernel",
+        choices=["linear", "rbf", "poly"],
+        default="linear",
+        help="SVM kernel type",
+    )
+    svm_parser.add_argument(
+        "--C",
+        type=float,
+        default=1.0,
+        help="Regularization parameter C",
+    )
+    svm_parser.add_argument(
+        "--gamma",
+        default="scale",
+        help="Gamma for RBF/poly ('scale' or numeric value)",
+    )
+    svm_parser.add_argument(
+        "--degree",
+        type=int,
+        default=3,
+        help="Degree for polynomial kernel",
+    )
+    svm_parser.add_argument(
+        "--epsilon",
+        type=float,
+        default=1e-5,
+        help="Threshold for support vector filtering (numerical stability)",
+    )
+    svm_parser.add_argument(
+        "--num-classes",
+        type=int,
+        default=10,
+        help="Number of classes to randomly sample for the experiment",
+    )
+    svm_parser.add_argument(
+        "--seed",
+        type=int,
+        default=42,
+        help="Random seed for class sampling",
+    )
 
     return parser
 
@@ -202,7 +243,16 @@ def main():
             data_root=args.data_root,
         )
     elif args.command == "svm":
-        svm_method(data_root=args.data_root)
+        svm_method(
+            data_root=args.data_root,
+            kernel=args.kernel,
+            C=args.C,
+            gamma=args.gamma,
+            degree=args.degree,
+            epsilon=args.epsilon,
+            num_classes=args.num_classes,
+            seed=args.seed,
+        )
     else:
         parser.error("Unknown command")
 

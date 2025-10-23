@@ -137,7 +137,7 @@ class BinarySVM:
         q = matrix(-np.ones(n_samples))
         G = matrix(np.vstack((-np.eye(n_samples), np.eye(n_samples))))
         h = matrix(np.hstack((np.zeros(n_samples), np.ones(n_samples) * self.C)))
-        A = matrix(labels, (1, n_samples))
+        A = matrix(labels, (1, n_samples), 'd')
         b = matrix(0.0)
 
         # 求解二次规划问题
@@ -171,7 +171,7 @@ class BinarySVM:
 
     def decision_func(self, features):
         """计算决策函数值"""
-        K = self._kernel_function(self.X_train, features)
+        K = self._kernel_function(self.support_vectors, features)
         decision = np.dot(self.alpha * self.support_vector_labels, K) + self.b
         return decision
     

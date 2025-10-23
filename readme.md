@@ -53,15 +53,53 @@ python -m src.main <sub-command> [options]
 
 ## SVM 基线
 
-SVM 使用 `dataloader.DataLoader` 的特征模式载入预提取特征，默认随机抽取 10 个类别并训练线性核 SVC。结果会打印验证集准确率，详细实验输出可按需重定向至文件。
+SVM 使用 `dataloader.DataLoader` 的特征模式载入预提取特征，默认随机抽取 10 个类别并训练线性核分类器，随后在同一子集上进行验证并打印准确率。
 
-示例命令：
+子命令与参数：
+
+```bash
+python -m src.main svm \
+	--data-root /home/stu12/homework/MLPR/data \
+	[--kernel {linear,rbf,poly}] \
+	[--C 1.0] \
+	[--gamma scale|<float>] \
+	[--degree 3] \
+	[--epsilon 1e-5] \
+	[--num-classes 10] \
+	[--seed 42]
+```
+
+参数说明：
+
+- `--kernel`：核函数类型，支持 `linear`、`rbf`、`poly`，默认 `linear`。
+- `--C`：正则化系数，默认 `1.0`。
+- `--gamma`：`rbf`/`poly` 的核宽度；可为 `scale`（默认）或显式数值（如 `0.1`）。
+- `--degree`：多项式核次数，默认 `3`。
+- `--epsilon`：用于数值稳定的支持向量筛选阈值，默认 `1e-5`。
+- `--num-classes`：从全部类别中随机抽取的子集大小，默认 `10`。
+- `--seed`：类别采样的随机种子，默认 `42`。
+
+示例：
+
+- 线性核（默认配置）：
 
 ```bash
 python -m src.main svm --data-root /home/stu12/homework/MLPR/data
 ```
 
-如需尝试不同数据根目录或自定义特征，请调整 `--data-root` 与对应的特征文件。
+- RBF 核并指定 `gamma=0.1`、`C=4.0`，并使用 20 个类别：
+
+```bash
+python -m src.main svm \
+	--data-root /home/stu12/homework/MLPR/data \
+	--kernel rbf \
+	--gamma 0.1 \
+	--C 4.0 \
+	--num-classes 10 \
+	--seed 42
+```
+
+如需尝试不同数据根目录或自定义特征，请调整 `--data-root` 与对应的特征文件路径。
 
 ## CNN 训练
 
