@@ -14,11 +14,11 @@
 - `src/cnn/` CNN 模块，包含网络结构、训练脚本、验证脚本与可视化工具。
 - `src/svm/` SVM 模块，封装了基于 sklearn 的分类器。
 - `result/` 默认的权重、日志、可视化输出目录。
-- `data/` 默认的数据集放置路径，需包含 `train/` 与 `val/` 子目录。
+- `data/` 默认的数据集放置路径，包含 `train/` 与 `val/` 子目录。
 
 ## 数据准备
 
-请确保数据集目录结构如下（示例只展示部分类别）：
+请确保数据集目录结构
 
 ```
 data/
@@ -46,19 +46,17 @@ data/
 运行方式（工程根目录）：
 
 ```bash
-python -m src.main <sub-command> [options]
+python src/main.py <sub-command> [options]
 ```
 
-若直接执行 `python src/main.py` 也能生效，前提是当前工作目录为项目根目录。
-
-## SVM 基线
+## SVM 方法
 
 SVM 使用 `dataloader.DataLoader` 的特征模式载入预提取特征，默认随机抽取 10 个类别并训练线性核分类器，随后在同一子集上进行验证并打印准确率。
 
 子命令与参数：
 
 ```bash
-python -m src.main svm \
+python src/main.py svm \
 	--data-root /home/stu12/homework/MLPR/data \
 	[--kernel {linear,rbf,poly}] \
 	[--C 1.0] \
@@ -81,16 +79,10 @@ python -m src.main svm \
 
 示例：
 
-- 线性核（默认配置）：
-
-```bash
-python -m src.main svm --data-root /home/stu12/homework/MLPR/data
-```
-
 - RBF 核并指定 `gamma=0.1`、`C=4.0`，并使用 20 个类别：
 
 ```bash
-python -m src.main svm \
+python src/main.py svm \
 	--data-root /home/stu12/homework/MLPR/data \
 	--kernel rbf \
 	--gamma 0.1 \
@@ -98,8 +90,6 @@ python -m src.main svm \
 	--num-classes 10 \
 	--seed 42
 ```
-
-如需尝试不同数据根目录或自定义特征，请调整 `--data-root` 与对应的特征文件路径。
 
 ## CNN 训练
 
@@ -118,17 +108,16 @@ python -m src.main svm \
 示例命令：
 
 ```bash
-python -m src.main cnn-train \
+python src/main.py cnn-train \
 	--weight-save-path result/cnn/weights/resnet_latest.pth \
 	--data-root /home/stu12/homework/MLPR/data/ \
 	--num-epochs 800 \
-	--batch-size 384
+	--batch-size 512
 ```
 
 训练脚本会：
 - 自动创建日志目录 `result/cnn/logs/`，文件名形如 `train_log_YYYYMMDD_HHMMSS.txt`。
 - 每 50 轮保存一次 checkpoint 至 `result/cnn/ckpts/train_时间戳/`。
-- 使用 Focal Loss 与自定义 SGD 优化器，并在需要时调用模型的部分冻结接口。
 
 ## CNN 验证
 
@@ -137,7 +126,7 @@ python -m src.main cnn-train \
 示例命令：
 
 ```bash
-python -m src.main cnn-validate \
+python src/main.py cnn-validate \
 	--weight-path result/cnn/weights/resnet_latest.pth \
 	--data-root /home/stu12/homework/MLPR/data/ \
 	--num-classes 200
@@ -156,11 +145,11 @@ python -m src.main cnn-validate \
 示例命令：
 
 ```bash
-python -m src.main cnn-visualize \
+python src/main.py cnn-visualize \
 	--log-file result/cnn/logs/train_log_20251016_172005.txt \
 	--ckpts-dir result/cnn/ckpts/train_20251016_172005 \
 	--result-dir result/cnn \
 	--data-root /home/stu12/homework/MLPR/data
 ```
 
-输出图像默认保存在 `result/cnn/vis_images/train_时间戳/`，可直接用于分析训练动态、挑选最佳 checkpoint。
+输出图像保存在 `result_dir/vis_images/train_时间戳/`
