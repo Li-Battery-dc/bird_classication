@@ -35,7 +35,8 @@ class MLP(nn.Module):
         
         # 如果未指定，hidden_features默认等于in_features
         # 在ViT中，通常设置为in_features * 4
-        hidden_features = in_features * mlp_ratio
+        # 注意：必须转换为整数，因为nn.Linear只接受整数维度
+        hidden_features = int(in_features * mlp_ratio)
         
         # 如果未指定，out_features默认等于in_features
         out_features = out_features or in_features
