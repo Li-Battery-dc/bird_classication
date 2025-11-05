@@ -1,6 +1,7 @@
 import torch
 import torch.nn as nn
 import torch.optim as optim
+from torch.amp import autocast, GradScaler
 
 from timm.data.mixup import Mixup
 
@@ -29,7 +30,9 @@ def train_one_epoch(
     device, 
     epoch, 
     config,
-    mixup_fn=None
+    batch_size=64, # 用于分阶段改变batch_size
+    mixup_fn=None,
+    is_scale=False
 ):
     """
     训练一个epoch
@@ -55,14 +58,14 @@ def train_one_epoch(
     acc1_list = []
     acc5_list = []
     
-    # 使用批次迭代器
     batch_iterator = data_loader.get_batch_iterator(
-        batch_size=config.batch_size, 
-        shuffle=True
+        batch_size=batch_size,
+        shuffle=True,
+        drop_last=True  # 保证每个batch都是完整的
     )
     
     # 计算总batch数（用于进度条）
-    total_batches = len(data_loader) // config.batch_size
+    total_batches = len(data_loader) // batch_size
     
     pbar = tqdm(batch_iterator, total=total_batches, desc=f"Epoch {epoch}")
     
@@ -79,22 +82,38 @@ def train_one_epoch(
         if mixup_fn is not None:
             images, labels = mixup_fn(images, labels)
 
-        # 前向传播
-        outputs = model(images)
-        loss = criterion(outputs, labels)
+        if is_scale:
+            scaler = GradScaler(device=device)
+            with autocast(device_type=device.type):
+                # 前向传播
+                outputs = model(images)
+                loss = criterion(outputs, labels)
+
+                scaler.scale(loss).backward()
+
+                if config.clip_grad:
+                    scaler.unscale_(optimizer)
+                    torch.nn.utils.clip_grad_norm_(model.parameters(), config.max_grad_norm)
+
+                scaler.step(optimizer)
+                scaler.update()
+        else:
+            # 前向传播
+            outputs = model(images)
+            loss = criterion(outputs, labels)
+
+            # 反向传播
+            optimizer.zero_grad()
+            loss.backward()
         
-        # 反向传播
-        optimizer.zero_grad()
-        loss.backward()
+            # 梯度裁剪
+            if config.clip_grad:
+                torch.nn.utils.clip_grad_norm_(
+                    model.parameters(), 
+                    config.max_grad_norm
+                )
         
-        # 梯度裁剪
-        if config.clip_grad:
-            torch.nn.utils.clip_grad_norm_(
-                model.parameters(), 
-                config.max_grad_norm
-            )
-        
-        optimizer.step()
+            optimizer.step()
         
         # 计算准确率
         acc1, acc5 = accuracy(outputs, labels, topk=(1, 5))
@@ -143,12 +162,12 @@ def validate(model, data_loader, criterion, device, config):
     acc5_list = []
     
     batch_iterator = data_loader.get_batch_iterator(
-        batch_size=config.batch_size,
+        batch_size=config.batch_size_val,
         shuffle=False
     )
-    
-    total_batches = len(data_loader) // config.batch_size
-    
+
+    total_batches = len(data_loader) // config.batch_size_val
+
     with torch.no_grad():
         for images, labels in tqdm(batch_iterator, total=total_batches, desc="Validating"):
             # 转换为tensor并移到设备
@@ -318,11 +337,17 @@ def train_main():
             # 先根据恢复的stage调整模型状态与可训练层
             if current_stage == 1:
                 model.freeze_backbone()
+                batch_size = config.stage1_batch_size
+                is_scale = False
             elif current_stage == 2:
                 model.unfreeze_last_n_blocks(config.stage2_unfreeze_layers)
+                batch_size = config.stage2_batch_size
+                is_scale = True
                 param_groups = get_parameter_groups(model, base_lr=config.stage2_base_lr, layer_decay=config.layer_decay)
             elif current_stage == 3:
                 model.unfreeze_last_n_blocks(config.stage3_unfreeze_layers)
+                batch_size = config.stage3_batch_size
+                is_scale = True
                 param_groups = get_parameter_groups(model, base_lr=config.stage3_base_lr, layer_decay=config.layer_decay)
 
             optimizer.param_groups = param_groups
@@ -353,6 +378,8 @@ def train_main():
     
     try:
         for epoch in range(start_epoch, total_epochs + 1):
+            batch_size = config.stage1_batch_size
+            is_scale = False
             if epoch == 0 and mixup_fn is not None:
                 logger(f"Using MixUp(alpha={config.mixup_params['mixup_alpha']}) + CutMix(alpha={config.mixup_params['cutmix_alpha']})")
 
@@ -360,6 +387,8 @@ def train_main():
             if epoch == stage1_end + 1 and config.stage2_epochs > 0 and current_stage < 2:
                 logger(f"Entering Stage 2: Unfreezing last {config.stage2_unfreeze_layers} blocks")
                 current_stage = 2
+                batch_size = config.stage2_batch_size
+                is_scale = True
                 patience_counter = 0  # reset patience when entering new stage
                 
                 # 解冻后几层
@@ -395,6 +424,8 @@ def train_main():
             if epoch == stage2_end + 1 and config.stage3_epochs > 0 and current_stage < 3:
                 logger(f"Entering Stage 3: Unfreezing last {config.stage3_unfreeze_layers} blocks")
                 current_stage = 3
+                batch_size = config.stage3_batch_size
+                is_scale = True
                 patience_counter = 0  # reset patience when entering new stage
                 # 只解冻最后N层
                 model.unfreeze_last_n_blocks(config.stage3_unfreeze_layers)
@@ -430,7 +461,8 @@ def train_main():
             current_lrs = scheduler.step(epoch - 1)
             
             train_loss, train_acc1, train_acc5 = train_one_epoch(
-                model, train_loader, criterion, optimizer, device, epoch, config, mixup_fn
+                model, train_loader, criterion, optimizer, 
+                device, epoch, config, batch_size, mixup_fn, is_scale
             )
             
             val_loss, val_acc1, val_acc5 = validate(

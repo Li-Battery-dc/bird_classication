@@ -155,7 +155,7 @@ class DataLoader:
         """获取所有类别名称"""
         return self.class_dirs
 
-    def get_batch_iterator(self, batch_size: int = 32, shuffle: bool = True):
+    def get_batch_iterator(self, batch_size: int = 32, shuffle: bool = True, drop_last: bool = False):
         """
         获取批次迭代器，类似于标准PyTorch DataLoader的行为
         每次迭代返回一个batch的数据
@@ -168,6 +168,10 @@ class DataLoader:
         
         for i in range(0, len(indices), batch_size):
             batch_indices = indices[i:i+batch_size]
+
+            # 防止改变batch_size的时候出错
+            if drop_last and len(batch_indices) < batch_size:
+                continue
             
             batch_data = []
             batch_labels = []

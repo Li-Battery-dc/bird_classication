@@ -19,8 +19,9 @@ class ViTConfig:
     mlp_ratio = 4.0           # MLP隐藏层维度倍数 (768*4=3072)
     
     # Regularization
-    dropout = 0.1             # Dropout比例
+    dropout = 0.2             # Dropout比例
     attention_dropout = 0.1   # Attention dropout比例
+    drop_path_rate = 0.2      # Stochastic Depth比例
     
     # 任务配置
     num_classes = 200         # CUB-200类别数
@@ -34,28 +35,30 @@ class ViTConfig:
 
     data_root = '/home/stu12/homework/MLPR/data/'
     result_dir = '/home/stu12/homework/MLPR/result/vit/'
-    
-    batch_size = 128
+
+    batch_size_val = 64
      
     # ==================== Checkpoint恢复配置 ====================
     # 从checkpoint恢复训练，设置为checkpoint路径，如 'result/vit/train_xxx/ckpt/checkpoint_epoch_10.pth'
     resume_from_checkpoint = None
     
     # ==================== 阶段1: 只训练分类头 ====================
-    stage1_epochs = 50
-    stage1_lr_head = 5e-4     # 分类头学习率
+    stage1_epochs = 0
+    stage1_batch_size = 384    
+    stage1_base_lr = 5e-4     # LLRD 的base learning rate
     stage1_freeze_backbone = True  # 冻结backbone
     
     # ==================== 阶段2: 微调后几层 ====================
-    stage2_epochs = 200          # 设为0则不启用该阶段
-    stage2_lr_head = 3e-4     # 分类头学习率
-    stage2_lr_backbone = 5e-5 # Backbone学习率
-    stage2_unfreeze_layers = 3  # 解冻最后N个Transformer Block
+    stage2_epochs = 1          # 设为0则不启用该阶段
+    stage2_batch_size = 256
+    stage2_base_lr = 3e-4     # LLRD 的base learning rate
+    stage2_unfreeze_layers = 4  # 解冻最后N个Transformer Block
     
     # ==================== 阶段3: 增加微调层数，统一学习率 ====================
-    stage3_epochs = 200
-    stage3_lr = 1e-4     # 统一学习率
-    stage3_unfreeze_layers = 6  # 阶段3解冻最后N个Transformer Block（默认为6）
+    stage3_epochs = 1
+    stage3_batch_size = 128
+    stage3_base_lr = 1e-4    
+    stage3_unfreeze_layers = 8  # 阶段3解冻最后N个Transformer Block（默认为6）
     
     # ==================== 优化器配置 ====================
     optimizer_type = 'adamw'  # 'adamw' 当前固定，改了这个参数也没用
@@ -64,7 +67,8 @@ class ViTConfig:
     
     # ==================== 学习率调度 ====================
     lr_scheduler = 'cosine'   # 当前使用自己实现的固定调度策略， 这个参数不起作用
-    warmup_epochs = 30         # Warmup轮数
+    layer_decay = 0.75       # Layer-wise LR Decay系数
+    warmup_epochs = 5         # Warmup轮数
     warmup_start_lr = 1e-4    # Warmup起始学习率
     min_lr = 1e-6             # 最小学习率
 
@@ -91,8 +95,13 @@ class ViTConfig:
     seed = 42
 
     # ==================== 数据增强配置 ====================
-    # 配置和cnn训练中采用完全相同的配置
     # 训练时增强
+    mixup_params = {
+        'mixup_alpha': 0.8,
+        'cutmix_alpha': 1.0,
+        'prob': 1.0,
+        'switch_prob': 0.5
+    }
     train_augmentation = {
         'random_resized_crop': 224,  # RandomResizedCrop to 224x224
         'horizontal_flip': True,
