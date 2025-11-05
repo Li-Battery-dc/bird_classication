@@ -37,44 +37,62 @@ def get_train_transforms(config):
     transform_list = []
     
     # Random Resized Crop
-    if aug.get('random_resized_crop', True):
-        transform_list.append(
-            transforms.RandomResizedCrop(
-                config.image_size, 
-                scale=aug.get('crop_scale', (0.8, 1.0))
-            )
-        )
-    else:
-        transform_list.append(transforms.Resize(config.image_size))
-    
+    crop_size = aug.get('random_resized_crop', 224)
+    if crop_size:
+        transform_list.append(transforms.RandomResizedCrop(crop_size))
+
+    # RandAugment（如有配置）
+    randaug = aug.get('rand_augment', None)
+    if randaug is not None:
+        n = randaug.get('n', 2)
+        m = randaug.get('m', 9)
+        transform_list.append(transforms.RandAugment(num_ops=n, magnitude=m))
+
     # Horizontal Flip
-    if aug.get('horizontal_flip', True):
+    if aug.get('horizontal_flip', False):
         transform_list.append(transforms.RandomHorizontalFlip())
-    
+
     # Color Jitter
     color_jitter = aug.get('color_jitter', None)
     if color_jitter:
         transform_list.append(
             transforms.ColorJitter(
-                brightness=color_jitter.get('brightness', 0.4),
-                contrast=color_jitter.get('contrast', 0.4),
-                saturation=color_jitter.get('saturation', 0.4),
-                hue=color_jitter.get('hue', 0.1)
+                brightness=color_jitter.get('brightness', 0.2),
+                contrast=color_jitter.get('contrast', 0.2),
+                saturation=color_jitter.get('saturation', 0.2),
+                hue=color_jitter.get('hue', 0)
             )
         )
-    
+
     # Random Rotation
     rotation = aug.get('random_rotation', 0)
     if rotation > 0:
         transform_list.append(transforms.RandomRotation(rotation))
-    
-    # ToTensor and Normalize
-    transform_list.extend([
-        transforms.ToTensor(),
-        transforms.Normalize(mean=[0.485, 0.456, 0.406], 
-                           std=[0.229, 0.224, 0.225])
-    ])
-    
+
+    # ToTensor
+    transform_list.append(transforms.ToTensor())
+
+    # Normalize
+    normalize = aug.get('normalize', {'mean': [0.485, 0.456, 0.406], 'std': [0.229, 0.224, 0.225]})
+    transform_list.append(
+        transforms.Normalize(
+            mean=normalize.get('mean', [0.485, 0.456, 0.406]),
+            std=normalize.get('std', [0.229, 0.224, 0.225])
+        )
+    )
+
+    # Random Erasing (must be after ToTensor and Normalize)
+    random_erasing = aug.get('random_erasing', None)
+    if random_erasing:
+        transform_list.append(
+            transforms.RandomErasing(
+                p=random_erasing.get('p', 0.5),
+                scale=random_erasing.get('scale', (0.02, 0.2)),
+                ratio=random_erasing.get('ratio', (0.3, 3.3)),
+                value=random_erasing.get('value', 0)
+            )
+        )
+
     return transforms.Compose(transform_list)
 
 
@@ -90,20 +108,30 @@ def get_val_transforms(config):
     """
     aug = config.val_augmentation
     
-    return transforms.Compose([
+    transform_list = [
         transforms.Resize(aug.get('resize', 256)),
         transforms.CenterCrop(aug.get('center_crop', 224)),
         transforms.ToTensor(),
-        transforms.Normalize(mean=[0.485, 0.456, 0.406], 
-                           std=[0.229, 0.224, 0.225])
-    ])
+    ]
+    
+    # Normalize
+    normalize = aug.get('normalize', {'mean': [0.485, 0.456, 0.406], 'std': [0.229, 0.224, 0.225]})
+    transform_list.append(
+        transforms.Normalize(
+            mean=normalize.get('mean', [0.485, 0.456, 0.406]),
+            std=normalize.get('std', [0.229, 0.224, 0.225])
+        )
+    )
+    
+    return transforms.Compose(transform_list)
 
 
 class LRScheduler:
     """
-    类比于ResNet训练方式
+    连续训练的学习率调度器
     Warmup + Cosine Annealing学习率调度器
     
+    支持多参数组，每个参数组可以有不同的学习率缩放因子
     前warmup_epochs个epoch线性增长学习率
     之后使用cosine annealing衰减到min_lr
     """
@@ -123,24 +151,40 @@ class LRScheduler:
         self.base_lr = base_lr
         self.min_lr = min_lr
         self.warmup_start_lr = warmup_start_lr
+        
+        # 保存每个参数组的学习率缩放因子
+        self.lr_scales = []
+        for param_group in optimizer.param_groups:
+            scale = param_group.get('lr', base_lr) / base_lr
+            self.lr_scales.append(scale)
     
     def step(self, epoch: int):
         """更新学习率"""
         if epoch < self.warmup_epochs:
             # Warmup阶段：线性增长
-            lr = self.warmup_start_lr + \
+            base_lr_current = self.warmup_start_lr + \
                  (self.base_lr - self.warmup_start_lr) * epoch / self.warmup_epochs
         else:
             # Cosine annealing阶段
             progress = (epoch - self.warmup_epochs) / (self.total_epochs - self.warmup_epochs)
-            lr = self.min_lr + (self.base_lr - self.min_lr) * \
+            base_lr_current = self.min_lr + (self.base_lr - self.min_lr) * \
                  0.5 * (1 + np.cos(np.pi * progress))
         
-        # 更新所有参数组的学习率
-        for param_group in self.optimizer.param_groups:
+        # 更新所有参数组的学习率（应用各自的缩放因子）
+        lrs = []
+        for i, param_group in enumerate(self.optimizer.param_groups):
+            if i < len(self.lr_scales):
+                lr = base_lr_current * self.lr_scales[i]
+            else:
+                lr = base_lr_current
             param_group['lr'] = lr
+            lrs.append(lr)
         
-        return lr
+        return lrs if len(lrs) > 1 else lrs[0]
+    
+    def get_last_lr(self):
+        """获取当前学习率"""
+        return [param_group['lr'] for param_group in self.optimizer.param_groups]
 
 
 class SmoothingCrossEntropy(nn.Module):
@@ -229,8 +273,7 @@ def save_checkpoint(
 
 def load_checkpoint(
     checkpoint_path: str,
-    model: nn.Module,
-    optimizer=None
+    model: nn.Module
 ):
     """
     加载模型checkpoint
@@ -239,30 +282,38 @@ def load_checkpoint(
         checkpoint_path: checkpoint文件路径
         model: 要加载权重的模型
         optimizer: 可选的优化器
+        scheduler: 可选的学习率调度器
         
     Returns:
-        start_epoch: 起始epoch
-        best_acc: 最佳准确率
+        checkpoint_info: 字典，包含 epoch, stage, best_acc, scheduler_state 等信息
     """
     if not os.path.exists(checkpoint_path):
         raise FileNotFoundError(f"Checkpoint not found: {checkpoint_path}")
     
     print(f"Loading checkpoint from {checkpoint_path}")
-    checkpoint = torch.load(checkpoint_path, map_location='cpu')
+    checkpoint = torch.load(checkpoint_path, map_location='cpu', weights_only=False)
     
     # 加载模型权重
     model.load_state_dict(checkpoint['model_state_dict'])
     
-    # 加载优化器状态
-    if optimizer is not None and 'optimizer_state_dict' in checkpoint:
-        optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
+    # 不在此处直接加载优化器/调度器，交由调用方在对齐参数组后再恢复
+    optimizer_state_dict = checkpoint.get('optimizer_state_dict', None)
+    scheduler_state = checkpoint.get('scheduler_state', None)
     
+    # 提取checkpoint信息
     start_epoch = checkpoint.get('epoch', 0)
+    current_stage = checkpoint.get('stage', 1)
     best_acc = checkpoint.get('best_acc', 0.0)
     
-    print(f"✓ Loaded checkpoint from epoch {start_epoch}, best_acc={best_acc:.2f}%")
+    print(f"✓ Loaded checkpoint from epoch {start_epoch}, stage {current_stage}, best_acc={best_acc:.2f}%")
     
-    return start_epoch, best_acc
+    return {
+        'epoch': start_epoch,
+        'stage': current_stage,
+        'best_acc': best_acc,
+        'scheduler_state': scheduler_state,
+        'optimizer_state_dict': optimizer_state_dict
+    }
 
 
 def get_parameter_groups(model, config):
@@ -291,6 +342,67 @@ def get_parameter_groups(model, config):
     ]
     
     return param_groups
+
+
+def get_unfrozen_backbone_params(model):
+    params = [
+        p for n, p in model.named_parameters() 
+        if 'head' not in n and p.requires_grad
+    ]
+    return params
+
+
+def update_optimizer_param_groups(optimizer, model, config, stage: int = 2):
+    """
+    动态更新优化器的参数组
+    多阶段训练使用
+    
+    Args:
+        optimizer: 优化器
+        model: 模型
+        stage: 当前阶段 (1, 2, 3)
+        config: 配置对象
+    """
+    if stage == 2:
+        # Stage 2: 添加解冻的backbone参数
+        unfrozen_params = get_unfrozen_backbone_params(model)
+        if unfrozen_params:
+            optimizer.add_param_group({
+                'params': unfrozen_params,
+                'lr': config.stage2_lr_backbone,
+                'name': 'backbone',
+                'weight_decay': config.weight_decay
+            })
+        # 更新分类头学习率
+        if len(optimizer.param_groups) > 0:
+            optimizer.param_groups[0]['lr'] = config.stage2_lr_head
+            
+    elif stage == 3:
+        # Stage 3: 添加“新”解冻参数，并统一学习率
+        # 1) 已在优化器中的参数集合（用id判断）
+        existing_param_ids = set()
+        for group in optimizer.param_groups:
+            for p in group['params']:
+                existing_param_ids.add(id(p))
+        
+        # 2) 当前可训练的backbone参数（使用原有工具函数）
+        unfrozen_params = get_unfrozen_backbone_params(model)
+        
+        # 3) 过滤出本阶段“新”解冻但尚未被优化器管理的参数
+        new_params = [p for p in unfrozen_params if id(p) not in existing_param_ids]
+        
+        # 4) 如有新参数，则添加一个新的参数组（避免与Stage 2重复）
+        if len(new_params) > 0:
+            optimizer.add_param_group({
+                'params': new_params,
+                'lr': config.stage3_lr,
+                'name': 'backbone_stage3',
+                'weight_decay': config.weight_decay
+            })
+        
+        # 5) 统一所有参数组学习率为 stage3_lr（包括head与已有backbone组）
+        for param_group in optimizer.param_groups:
+            param_group['lr'] = config.stage3_lr
 
 
 if __name__ == '__main__':

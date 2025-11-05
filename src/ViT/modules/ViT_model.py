@@ -15,6 +15,7 @@ import os
 class VisionTransformer(nn.Module):
     """
     Vision Transformer模型
+    复现ViT-Base/16架构
     
     架构流程:
     Input Image (B, 3, 224, 224)
@@ -108,8 +109,8 @@ class VisionTransformer(nn.Module):
         nn.init.normal_(self.patch_embed.cls_token, std=0.02)
         nn.init.normal_(self.patch_embed.pos_embedding, std=0.02)
         
-        # 初始化分类头
-        nn.init.zeros_(self.head.weight)
+        # 初始化分类头 - 使用小的随机初始化而不是0
+        nn.init.normal_(self.head.weight, std=0.01)
         nn.init.zeros_(self.head.bias)
     
     def forward(self, x: torch.Tensor) -> torch.Tensor:
@@ -263,14 +264,14 @@ def _load_pretrained_weights(
 ):
     """
     从timm加载预训练权重并映射到我们的模型
+    跳过分类头
     
     Args:
         model: 我们的ViT模型
         model_name: timm模型名称
-            - 'vit_base_patch16_224_in21k': ImageNet-21k预训练 (推荐)
+            - 'vit_base_patch16_224_in21k': ImageNet-21k预训练,更大数据集推荐
             - 'vit_base_patch16_224': ImageNet-1k预训练
-            - 'vit_base_patch16_384': 384x384输入
-    
+            
     Returns:
         成功加载的参数数量
     """
@@ -301,7 +302,13 @@ def _load_pretrained_weights(
     
     # 检查参数匹配
     for key, value in mapped_pretrained.items():
+        # 跳过分类头参数
+        if key.startswith('head.'):
+            skipped_keys.append(key)
+            continue
+
         if key in model_dict:
+            # 用shape简单检查
             if model_dict[key].shape == value.shape:
                 matched_dict[key] = value
             else:
@@ -322,17 +329,18 @@ def _load_pretrained_weights(
     
     print(f"\n Successfully loaded: {loaded_params}/{total_params} parameters ({match_rate:.1f}%)")
     
+    if skipped_keys:
+        for item in skipped_keys[:3]:  # 只显示前3个
+            print(f"  - Skipped: {item}")
+        if len(skipped_keys) > 3:
+            print(f"  ... and {len(skipped_keys)-3} more")
+    
     if shape_mismatch:
         print(f"Warning: Shape mismatch ({len(shape_mismatch)} parameters):")
         for item in shape_mismatch[:3]:  # 只显示前3个
             print(f"  - {item}")
         if len(shape_mismatch) > 3:
             print(f"  ... and {len(shape_mismatch)-3} more")
-    
-    # 分类头通常会被跳过（num_classes不同）
-    head_skipped = any('head' in k for k in skipped_keys)
-    if head_skipped:
-        print(f"✓ Classification head skipped (expected for num_classes={model.num_classes})")
     
     return loaded_params
 
