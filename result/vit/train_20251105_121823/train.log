@@ -1,0 +1,1258 @@
+
+============================================================
+Loading Data
+============================================================
+Train samples: 10597
+Val samples: 1191
+
+============================================================
+Creating Model
+============================================================
+
+================================================================================
+Training Configuration (Continuous Mode)
+================================================================================
+Total Epochs: 450
+  - Stage 1 (Head only): Epochs 1-50
+  - Stage 2 (Unfreeze 3 blocks): Epochs 51-250
+  - Stage 3 (Unfreeze 6 blocks): Epochs 251-450
+================================================================================
+
+================================================================================
+Resuming from Checkpoint
+================================================================================
+✓ Optimizer state loaded after aligning param groups
+✓ Scheduler lr_scales restored: [0.6, 0.1]
+✓ Resuming from epoch 251, stage 2
+✓ Best accuracy so far: 51.47%
+================================================================================
+Entering Stage 3: Unfreezing last 6 blocks
+✓ Optimizer updated with 3 parameter groups
+  Group 0 (head): lr=0.000100
+  Group 1 (backbone): lr=0.000100
+  Group 2 (backbone_stage3): lr=0.000100
+
+Epoch 251/450 [Stage 3]
+Train - Loss: 2.4414, Acc@1: 56.58%, Acc@5: 80.58%
+Val   - Loss: 2.7106, Acc@1: 51.53%, Acc@5: 78.15%
+LR (head): 0.000047
+LR (backbone): 0.000047
+LR (backbone_stage3): 0.000047
+
+Epoch 252/450 [Stage 3]
+Train - Loss: 2.3736, Acc@1: 59.41%, Acc@5: 81.25%
+Val   - Loss: 2.6410, Acc@1: 53.35%, Acc@5: 79.99%
+LR (head): 0.000046
+LR (backbone): 0.000046
+LR (backbone_stage3): 0.000046
+
+Epoch 253/450 [Stage 3]
+Train - Loss: 2.3211, Acc@1: 61.32%, Acc@5: 82.22%
+Val   - Loss: 2.6012, Acc@1: 54.94%, Acc@5: 80.54%
+LR (head): 0.000046
+LR (backbone): 0.000046
+LR (backbone_stage3): 0.000046
+
+Epoch 254/450 [Stage 3]
+Train - Loss: 2.3130, Acc@1: 60.73%, Acc@5: 82.80%
+Val   - Loss: 2.6349, Acc@1: 54.11%, Acc@5: 79.11%
+LR (head): 0.000046
+LR (backbone): 0.000046
+LR (backbone_stage3): 0.000046
+
+Epoch 255/450 [Stage 3]
+Train - Loss: 2.3067, Acc@1: 61.52%, Acc@5: 82.92%
+Val   - Loss: 2.6139, Acc@1: 54.21%, Acc@5: 80.05%
+LR (head): 0.000045
+LR (backbone): 0.000045
+LR (backbone_stage3): 0.000045
+
+Epoch 256/450 [Stage 3]
+Train - Loss: 2.2933, Acc@1: 61.81%, Acc@5: 83.05%
+Val   - Loss: 2.6249, Acc@1: 55.15%, Acc@5: 79.40%
+LR (head): 0.000045
+LR (backbone): 0.000045
+LR (backbone_stage3): 0.000045
+
+Epoch 257/450 [Stage 3]
+Train - Loss: 2.2654, Acc@1: 62.72%, Acc@5: 83.52%
+Val   - Loss: 2.5554, Acc@1: 54.68%, Acc@5: 80.93%
+LR (head): 0.000045
+LR (backbone): 0.000045
+LR (backbone_stage3): 0.000045
+
+Epoch 258/450 [Stage 3]
+Train - Loss: 2.2706, Acc@1: 62.26%, Acc@5: 82.90%
+Val   - Loss: 2.6034, Acc@1: 53.88%, Acc@5: 79.56%
+LR (head): 0.000044
+LR (backbone): 0.000044
+LR (backbone_stage3): 0.000044
+
+Epoch 259/450 [Stage 3]
+Train - Loss: 2.2509, Acc@1: 63.03%, Acc@5: 83.85%
+Val   - Loss: 2.5732, Acc@1: 55.54%, Acc@5: 80.54%
+LR (head): 0.000044
+LR (backbone): 0.000044
+LR (backbone_stage3): 0.000044
+
+Epoch 260/450 [Stage 3]
+Train - Loss: 2.2424, Acc@1: 63.29%, Acc@5: 83.55%
+Val   - Loss: 2.5368, Acc@1: 54.99%, Acc@5: 80.91%
+LR (head): 0.000043
+LR (backbone): 0.000043
+LR (backbone_stage3): 0.000043
+
+Epoch 261/450 [Stage 3]
+Train - Loss: 2.2323, Acc@1: 63.65%, Acc@5: 84.01%
+Val   - Loss: 2.5750, Acc@1: 54.99%, Acc@5: 80.87%
+LR (head): 0.000043
+LR (backbone): 0.000043
+LR (backbone_stage3): 0.000043
+
+Epoch 262/450 [Stage 3]
+Train - Loss: 2.2508, Acc@1: 63.25%, Acc@5: 83.46%
+Val   - Loss: 2.5863, Acc@1: 54.55%, Acc@5: 80.33%
+LR (head): 0.000043
+LR (backbone): 0.000043
+LR (backbone_stage3): 0.000043
+
+Epoch 263/450 [Stage 3]
+Train - Loss: 2.2231, Acc@1: 64.03%, Acc@5: 84.42%
+Val   - Loss: 2.6680, Acc@1: 52.24%, Acc@5: 78.41%
+LR (head): 0.000042
+LR (backbone): 0.000042
+LR (backbone_stage3): 0.000042
+
+Epoch 264/450 [Stage 3]
+Train - Loss: 2.1821, Acc@1: 64.53%, Acc@5: 84.62%
+Val   - Loss: 2.5875, Acc@1: 54.70%, Acc@5: 80.95%
+LR (head): 0.000042
+LR (backbone): 0.000042
+LR (backbone_stage3): 0.000042
+
+Epoch 265/450 [Stage 3]
+Train - Loss: 2.1733, Acc@1: 65.50%, Acc@5: 85.11%
+Val   - Loss: 2.6048, Acc@1: 53.61%, Acc@5: 79.84%
+LR (head): 0.000042
+LR (backbone): 0.000042
+LR (backbone_stage3): 0.000042
+
+Epoch 266/450 [Stage 3]
+Train - Loss: 2.1826, Acc@1: 65.51%, Acc@5: 84.46%
+Val   - Loss: 2.5895, Acc@1: 54.70%, Acc@5: 80.27%
+LR (head): 0.000041
+LR (backbone): 0.000041
+LR (backbone_stage3): 0.000041
+
+Epoch 267/450 [Stage 3]
+Train - Loss: 2.1651, Acc@1: 65.72%, Acc@5: 85.01%
+Val   - Loss: 2.5977, Acc@1: 54.55%, Acc@5: 79.96%
+LR (head): 0.000041
+LR (backbone): 0.000041
+LR (backbone_stage3): 0.000041
+
+Epoch 268/450 [Stage 3]
+Train - Loss: 2.1487, Acc@1: 65.89%, Acc@5: 85.36%
+Val   - Loss: 2.5986, Acc@1: 54.16%, Acc@5: 78.92%
+LR (head): 0.000041
+LR (backbone): 0.000041
+LR (backbone_stage3): 0.000041
+
+Epoch 269/450 [Stage 3]
+Train - Loss: 2.1171, Acc@1: 66.93%, Acc@5: 86.25%
+Val   - Loss: 2.6148, Acc@1: 55.51%, Acc@5: 79.60%
+LR (head): 0.000040
+LR (backbone): 0.000040
+LR (backbone_stage3): 0.000040
+
+Epoch 270/450 [Stage 3]
+Train - Loss: 2.1328, Acc@1: 66.65%, Acc@5: 85.85%
+Val   - Loss: 2.5897, Acc@1: 54.88%, Acc@5: 79.62%
+LR (head): 0.000040
+LR (backbone): 0.000040
+LR (backbone_stage3): 0.000040
+
+Epoch 271/450 [Stage 3]
+Train - Loss: 2.0913, Acc@1: 67.44%, Acc@5: 86.54%
+Val   - Loss: 2.5863, Acc@1: 54.63%, Acc@5: 80.01%
+LR (head): 0.000039
+LR (backbone): 0.000039
+LR (backbone_stage3): 0.000039
+
+Epoch 272/450 [Stage 3]
+Train - Loss: 2.1000, Acc@1: 67.52%, Acc@5: 85.90%
+Val   - Loss: 2.5818, Acc@1: 54.86%, Acc@5: 80.72%
+LR (head): 0.000039
+LR (backbone): 0.000039
+LR (backbone_stage3): 0.000039
+
+Epoch 273/450 [Stage 3]
+Train - Loss: 2.0792, Acc@1: 68.31%, Acc@5: 86.41%
+Val   - Loss: 2.5769, Acc@1: 54.36%, Acc@5: 81.05%
+LR (head): 0.000039
+LR (backbone): 0.000039
+LR (backbone_stage3): 0.000039
+
+Epoch 274/450 [Stage 3]
+Train - Loss: 2.0888, Acc@1: 68.34%, Acc@5: 86.60%
+Val   - Loss: 2.6412, Acc@1: 54.08%, Acc@5: 78.86%
+LR (head): 0.000038
+LR (backbone): 0.000038
+LR (backbone_stage3): 0.000038
+
+Epoch 275/450 [Stage 3]
+Train - Loss: 2.0909, Acc@1: 67.88%, Acc@5: 86.69%
+Val   - Loss: 2.5825, Acc@1: 55.06%, Acc@5: 80.14%
+LR (head): 0.000038
+LR (backbone): 0.000038
+LR (backbone_stage3): 0.000038
+
+Epoch 276/450 [Stage 3]
+Train - Loss: 2.0465, Acc@1: 69.43%, Acc@5: 87.27%
+Val   - Loss: 2.5569, Acc@1: 56.31%, Acc@5: 80.08%
+LR (head): 0.000038
+LR (backbone): 0.000038
+LR (backbone_stage3): 0.000038
+
+Epoch 277/450 [Stage 3]
+Train - Loss: 2.0150, Acc@1: 69.89%, Acc@5: 87.70%
+Val   - Loss: 2.5517, Acc@1: 54.73%, Acc@5: 80.94%
+LR (head): 0.000037
+LR (backbone): 0.000037
+LR (backbone_stage3): 0.000037
+
+Epoch 278/450 [Stage 3]
+Train - Loss: 2.0392, Acc@1: 69.85%, Acc@5: 87.18%
+Val   - Loss: 2.5543, Acc@1: 56.23%, Acc@5: 80.63%
+LR (head): 0.000037
+LR (backbone): 0.000037
+LR (backbone_stage3): 0.000037
+
+Epoch 279/450 [Stage 3]
+Train - Loss: 2.0221, Acc@1: 70.44%, Acc@5: 87.84%
+Val   - Loss: 2.5767, Acc@1: 55.19%, Acc@5: 80.60%
+LR (head): 0.000037
+LR (backbone): 0.000037
+LR (backbone_stage3): 0.000037
+
+Epoch 280/450 [Stage 3]
+Train - Loss: 2.0185, Acc@1: 70.04%, Acc@5: 87.82%
+Val   - Loss: 2.6047, Acc@1: 54.02%, Acc@5: 79.28%
+LR (head): 0.000036
+LR (backbone): 0.000036
+LR (backbone_stage3): 0.000036
+
+Epoch 281/450 [Stage 3]
+Train - Loss: 2.0135, Acc@1: 70.19%, Acc@5: 87.69%
+Val   - Loss: 2.6118, Acc@1: 54.67%, Acc@5: 79.69%
+LR (head): 0.000036
+LR (backbone): 0.000036
+LR (backbone_stage3): 0.000036
+
+Epoch 282/450 [Stage 3]
+Train - Loss: 1.9945, Acc@1: 70.91%, Acc@5: 87.99%
+Val   - Loss: 2.6215, Acc@1: 53.77%, Acc@5: 79.40%
+LR (head): 0.000036
+LR (backbone): 0.000036
+LR (backbone_stage3): 0.000036
+
+Epoch 283/450 [Stage 3]
+Train - Loss: 1.9758, Acc@1: 71.48%, Acc@5: 88.44%
+Val   - Loss: 2.5648, Acc@1: 56.03%, Acc@5: 80.14%
+LR (head): 0.000035
+LR (backbone): 0.000035
+LR (backbone_stage3): 0.000035
+
+Epoch 284/450 [Stage 3]
+Train - Loss: 1.9866, Acc@1: 71.31%, Acc@5: 88.24%
+Val   - Loss: 2.5695, Acc@1: 57.27%, Acc@5: 80.00%
+LR (head): 0.000035
+LR (backbone): 0.000035
+LR (backbone_stage3): 0.000035
+
+Epoch 285/450 [Stage 3]
+Train - Loss: 1.9746, Acc@1: 71.45%, Acc@5: 88.35%
+Val   - Loss: 2.6312, Acc@1: 53.51%, Acc@5: 78.30%
+LR (head): 0.000035
+LR (backbone): 0.000035
+LR (backbone_stage3): 0.000035
+
+Epoch 286/450 [Stage 3]
+Train - Loss: 1.9505, Acc@1: 72.01%, Acc@5: 88.64%
+Val   - Loss: 2.5594, Acc@1: 56.03%, Acc@5: 80.41%
+LR (head): 0.000034
+LR (backbone): 0.000034
+LR (backbone_stage3): 0.000034
+
+Epoch 287/450 [Stage 3]
+Train - Loss: 1.9360, Acc@1: 72.86%, Acc@5: 89.56%
+Val   - Loss: 2.5260, Acc@1: 56.13%, Acc@5: 80.27%
+LR (head): 0.000034
+LR (backbone): 0.000034
+LR (backbone_stage3): 0.000034
+
+Epoch 288/450 [Stage 3]
+Train - Loss: 1.9439, Acc@1: 72.33%, Acc@5: 88.93%
+Val   - Loss: 2.5761, Acc@1: 55.46%, Acc@5: 78.86%
+LR (head): 0.000033
+LR (backbone): 0.000033
+LR (backbone_stage3): 0.000033
+
+Epoch 289/450 [Stage 3]
+Train - Loss: 1.9471, Acc@1: 72.61%, Acc@5: 88.56%
+Val   - Loss: 2.5380, Acc@1: 54.31%, Acc@5: 79.72%
+LR (head): 0.000033
+LR (backbone): 0.000033
+LR (backbone_stage3): 0.000033
+
+Epoch 290/450 [Stage 3]
+Train - Loss: 1.9287, Acc@1: 72.78%, Acc@5: 88.86%
+Val   - Loss: 2.5839, Acc@1: 54.31%, Acc@5: 78.64%
+LR (head): 0.000033
+LR (backbone): 0.000033
+LR (backbone_stage3): 0.000033
+
+Epoch 291/450 [Stage 3]
+Train - Loss: 1.9302, Acc@1: 73.16%, Acc@5: 89.31%
+Val   - Loss: 2.6006, Acc@1: 54.66%, Acc@5: 78.51%
+LR (head): 0.000032
+LR (backbone): 0.000032
+LR (backbone_stage3): 0.000032
+
+Epoch 292/450 [Stage 3]
+Train - Loss: 1.9316, Acc@1: 73.13%, Acc@5: 88.91%
+Val   - Loss: 2.6030, Acc@1: 54.00%, Acc@5: 78.61%
+LR (head): 0.000032
+LR (backbone): 0.000032
+LR (backbone_stage3): 0.000032
+
+Epoch 293/450 [Stage 3]
+Train - Loss: 1.8939, Acc@1: 73.86%, Acc@5: 89.31%
+Val   - Loss: 2.5976, Acc@1: 55.62%, Acc@5: 78.79%
+LR (head): 0.000032
+LR (backbone): 0.000032
+LR (backbone_stage3): 0.000032
+
+Epoch 294/450 [Stage 3]
+Train - Loss: 1.8963, Acc@1: 74.02%, Acc@5: 89.45%
+Val   - Loss: 2.5499, Acc@1: 55.66%, Acc@5: 79.98%
+LR (head): 0.000031
+LR (backbone): 0.000031
+LR (backbone_stage3): 0.000031
+
+Epoch 295/450 [Stage 3]
+Train - Loss: 1.8833, Acc@1: 74.18%, Acc@5: 89.66%
+Val   - Loss: 2.5761, Acc@1: 56.13%, Acc@5: 79.18%
+LR (head): 0.000031
+LR (backbone): 0.000031
+LR (backbone_stage3): 0.000031
+
+Epoch 296/450 [Stage 3]
+Train - Loss: 1.8851, Acc@1: 74.33%, Acc@5: 89.23%
+Val   - Loss: 2.6018, Acc@1: 53.72%, Acc@5: 79.00%
+LR (head): 0.000031
+LR (backbone): 0.000031
+LR (backbone_stage3): 0.000031
+
+Epoch 297/450 [Stage 3]
+Train - Loss: 1.8690, Acc@1: 74.66%, Acc@5: 89.72%
+Val   - Loss: 2.6129, Acc@1: 54.37%, Acc@5: 79.02%
+LR (head): 0.000030
+LR (backbone): 0.000030
+LR (backbone_stage3): 0.000030
+
+Epoch 298/450 [Stage 3]
+Train - Loss: 1.8832, Acc@1: 74.49%, Acc@5: 89.45%
+Val   - Loss: 2.6702, Acc@1: 53.96%, Acc@5: 77.51%
+LR (head): 0.000030
+LR (backbone): 0.000030
+LR (backbone_stage3): 0.000030
+
+Epoch 299/450 [Stage 3]
+Train - Loss: 1.8808, Acc@1: 74.53%, Acc@5: 89.38%
+Val   - Loss: 2.6147, Acc@1: 56.05%, Acc@5: 78.52%
+LR (head): 0.000030
+LR (backbone): 0.000030
+LR (backbone_stage3): 0.000030
+
+Epoch 300/450 [Stage 3]
+Train - Loss: 1.8457, Acc@1: 75.48%, Acc@5: 89.95%
+Val   - Loss: 2.6311, Acc@1: 55.42%, Acc@5: 78.40%
+LR (head): 0.000029
+LR (backbone): 0.000029
+LR (backbone_stage3): 0.000029
+
+Epoch 301/450 [Stage 3]
+Train - Loss: 1.8491, Acc@1: 75.30%, Acc@5: 90.16%
+Val   - Loss: 2.6506, Acc@1: 55.15%, Acc@5: 77.57%
+LR (head): 0.000029
+LR (backbone): 0.000029
+LR (backbone_stage3): 0.000029
+
+Epoch 302/450 [Stage 3]
+Train - Loss: 1.8346, Acc@1: 76.12%, Acc@5: 90.38%
+Val   - Loss: 2.6346, Acc@1: 54.78%, Acc@5: 78.40%
+LR (head): 0.000029
+LR (backbone): 0.000029
+LR (backbone_stage3): 0.000029
+
+Epoch 303/450 [Stage 3]
+Train - Loss: 1.8482, Acc@1: 75.31%, Acc@5: 90.14%
+Val   - Loss: 2.6673, Acc@1: 54.72%, Acc@5: 77.38%
+LR (head): 0.000028
+LR (backbone): 0.000028
+LR (backbone_stage3): 0.000028
+
+Epoch 304/450 [Stage 3]
+Train - Loss: 1.8427, Acc@1: 75.46%, Acc@5: 90.51%
+Val   - Loss: 2.6411, Acc@1: 53.72%, Acc@5: 78.00%
+LR (head): 0.000028
+LR (backbone): 0.000028
+LR (backbone_stage3): 0.000028
+
+Epoch 305/450 [Stage 3]
+Train - Loss: 1.8335, Acc@1: 75.89%, Acc@5: 90.12%
+Val   - Loss: 2.6498, Acc@1: 54.68%, Acc@5: 77.26%
+LR (head): 0.000028
+LR (backbone): 0.000028
+LR (backbone_stage3): 0.000028
+
+Epoch 306/450 [Stage 3]
+Train - Loss: 1.8350, Acc@1: 75.94%, Acc@5: 90.51%
+Val   - Loss: 2.6534, Acc@1: 54.03%, Acc@5: 77.57%
+LR (head): 0.000027
+LR (backbone): 0.000027
+LR (backbone_stage3): 0.000027
+
+Epoch 307/450 [Stage 3]
+Train - Loss: 1.8014, Acc@1: 76.82%, Acc@5: 90.95%
+Val   - Loss: 2.6758, Acc@1: 54.64%, Acc@5: 76.79%
+LR (head): 0.000027
+LR (backbone): 0.000027
+LR (backbone_stage3): 0.000027
+
+Epoch 308/450 [Stage 3]
+Train - Loss: 1.8207, Acc@1: 76.46%, Acc@5: 90.66%
+Val   - Loss: 2.5961, Acc@1: 55.74%, Acc@5: 79.02%
+LR (head): 0.000027
+LR (backbone): 0.000027
+LR (backbone_stage3): 0.000027
+
+Epoch 309/450 [Stage 3]
+Train - Loss: 1.8154, Acc@1: 76.88%, Acc@5: 90.57%
+Val   - Loss: 2.6412, Acc@1: 54.66%, Acc@5: 78.30%
+LR (head): 0.000026
+LR (backbone): 0.000026
+LR (backbone_stage3): 0.000026
+
+Epoch 310/450 [Stage 3]
+Train - Loss: 1.8106, Acc@1: 76.49%, Acc@5: 90.53%
+Val   - Loss: 2.6241, Acc@1: 55.80%, Acc@5: 78.42%
+LR (head): 0.000026
+LR (backbone): 0.000026
+LR (backbone_stage3): 0.000026
+
+Epoch 311/450 [Stage 3]
+Train - Loss: 1.7927, Acc@1: 77.58%, Acc@5: 90.98%
+Val   - Loss: 2.6420, Acc@1: 54.76%, Acc@5: 78.14%
+LR (head): 0.000026
+LR (backbone): 0.000026
+LR (backbone_stage3): 0.000026
+
+Epoch 312/450 [Stage 3]
+Train - Loss: 1.7745, Acc@1: 77.81%, Acc@5: 91.17%
+Val   - Loss: 2.6451, Acc@1: 53.80%, Acc@5: 78.04%
+LR (head): 0.000025
+LR (backbone): 0.000025
+LR (backbone_stage3): 0.000025
+
+Epoch 313/450 [Stage 3]
+Train - Loss: 1.7851, Acc@1: 77.27%, Acc@5: 90.94%
+Val   - Loss: 2.6366, Acc@1: 56.11%, Acc@5: 78.16%
+LR (head): 0.000025
+LR (backbone): 0.000025
+LR (backbone_stage3): 0.000025
+
+Epoch 314/450 [Stage 3]
+Train - Loss: 1.7852, Acc@1: 77.63%, Acc@5: 91.09%
+Val   - Loss: 2.6508, Acc@1: 54.97%, Acc@5: 77.26%
+LR (head): 0.000025
+LR (backbone): 0.000025
+LR (backbone_stage3): 0.000025
+
+Epoch 315/450 [Stage 3]
+Train - Loss: 1.7624, Acc@1: 78.02%, Acc@5: 91.33%
+Val   - Loss: 2.5799, Acc@1: 56.32%, Acc@5: 79.92%
+LR (head): 0.000024
+LR (backbone): 0.000024
+LR (backbone_stage3): 0.000024
+
+Epoch 316/450 [Stage 3]
+Train - Loss: 1.7620, Acc@1: 78.01%, Acc@5: 91.28%
+Val   - Loss: 2.5929, Acc@1: 54.48%, Acc@5: 78.94%
+LR (head): 0.000024
+LR (backbone): 0.000024
+LR (backbone_stage3): 0.000024
+
+Epoch 317/450 [Stage 3]
+Train - Loss: 1.7596, Acc@1: 78.41%, Acc@5: 91.28%
+Val   - Loss: 2.6323, Acc@1: 55.31%, Acc@5: 78.14%
+LR (head): 0.000024
+LR (backbone): 0.000024
+LR (backbone_stage3): 0.000024
+
+Epoch 318/450 [Stage 3]
+Train - Loss: 1.7494, Acc@1: 78.65%, Acc@5: 91.45%
+Val   - Loss: 2.6640, Acc@1: 53.91%, Acc@5: 76.71%
+LR (head): 0.000024
+LR (backbone): 0.000024
+LR (backbone_stage3): 0.000024
+
+Epoch 319/450 [Stage 3]
+Train - Loss: 1.7701, Acc@1: 77.74%, Acc@5: 90.96%
+Val   - Loss: 2.6830, Acc@1: 54.50%, Acc@5: 76.95%
+LR (head): 0.000023
+LR (backbone): 0.000023
+LR (backbone_stage3): 0.000023
+
+Epoch 320/450 [Stage 3]
+Train - Loss: 1.7557, Acc@1: 78.22%, Acc@5: 91.39%
+Val   - Loss: 2.6502, Acc@1: 54.37%, Acc@5: 77.65%
+LR (head): 0.000023
+LR (backbone): 0.000023
+LR (backbone_stage3): 0.000023
+
+Epoch 321/450 [Stage 3]
+Train - Loss: 1.7389, Acc@1: 78.71%, Acc@5: 91.60%
+Val   - Loss: 2.7008, Acc@1: 53.78%, Acc@5: 75.75%
+LR (head): 0.000023
+LR (backbone): 0.000023
+LR (backbone_stage3): 0.000023
+
+Epoch 322/450 [Stage 3]
+Train - Loss: 1.7293, Acc@1: 79.35%, Acc@5: 91.69%
+Val   - Loss: 2.6651, Acc@1: 54.21%, Acc@5: 77.18%
+LR (head): 0.000022
+LR (backbone): 0.000022
+LR (backbone_stage3): 0.000022
+
+Epoch 323/450 [Stage 3]
+Train - Loss: 1.7248, Acc@1: 79.18%, Acc@5: 91.82%
+Val   - Loss: 2.6868, Acc@1: 53.49%, Acc@5: 77.36%
+LR (head): 0.000022
+LR (backbone): 0.000022
+LR (backbone_stage3): 0.000022
+
+Epoch 324/450 [Stage 3]
+Train - Loss: 1.7289, Acc@1: 78.99%, Acc@5: 91.97%
+Val   - Loss: 2.6527, Acc@1: 54.53%, Acc@5: 78.08%
+LR (head): 0.000022
+LR (backbone): 0.000022
+LR (backbone_stage3): 0.000022
+
+Epoch 325/450 [Stage 3]
+Train - Loss: 1.7261, Acc@1: 79.53%, Acc@5: 92.15%
+Val   - Loss: 2.6241, Acc@1: 55.41%, Acc@5: 78.40%
+LR (head): 0.000021
+LR (backbone): 0.000021
+LR (backbone_stage3): 0.000021
+
+Epoch 326/450 [Stage 3]
+Train - Loss: 1.7254, Acc@1: 79.31%, Acc@5: 91.89%
+Val   - Loss: 2.6797, Acc@1: 54.37%, Acc@5: 77.61%
+LR (head): 0.000021
+LR (backbone): 0.000021
+LR (backbone_stage3): 0.000021
+
+Epoch 327/450 [Stage 3]
+Train - Loss: 1.7201, Acc@1: 79.31%, Acc@5: 91.86%
+Val   - Loss: 2.6492, Acc@1: 54.84%, Acc@5: 77.61%
+LR (head): 0.000021
+LR (backbone): 0.000021
+LR (backbone_stage3): 0.000021
+
+Epoch 328/450 [Stage 3]
+Train - Loss: 1.7285, Acc@1: 79.44%, Acc@5: 91.95%
+Val   - Loss: 2.6677, Acc@1: 53.92%, Acc@5: 77.54%
+LR (head): 0.000021
+LR (backbone): 0.000021
+LR (backbone_stage3): 0.000021
+
+Epoch 329/450 [Stage 3]
+Train - Loss: 1.7162, Acc@1: 80.02%, Acc@5: 91.83%
+Val   - Loss: 2.6288, Acc@1: 56.73%, Acc@5: 78.18%
+LR (head): 0.000020
+LR (backbone): 0.000020
+LR (backbone_stage3): 0.000020
+
+Epoch 330/450 [Stage 3]
+Train - Loss: 1.7092, Acc@1: 79.70%, Acc@5: 91.87%
+Val   - Loss: 2.6299, Acc@1: 56.27%, Acc@5: 78.00%
+LR (head): 0.000020
+LR (backbone): 0.000020
+LR (backbone_stage3): 0.000020
+
+Epoch 331/450 [Stage 3]
+Train - Loss: 1.7074, Acc@1: 79.60%, Acc@5: 91.98%
+Val   - Loss: 2.6522, Acc@1: 55.68%, Acc@5: 77.85%
+LR (head): 0.000020
+LR (backbone): 0.000020
+LR (backbone_stage3): 0.000020
+
+Epoch 332/450 [Stage 3]
+Train - Loss: 1.6894, Acc@1: 80.58%, Acc@5: 92.28%
+Val   - Loss: 2.6970, Acc@1: 54.96%, Acc@5: 76.62%
+LR (head): 0.000019
+LR (backbone): 0.000019
+LR (backbone_stage3): 0.000019
+
+Epoch 333/450 [Stage 3]
+Train - Loss: 1.6958, Acc@1: 80.31%, Acc@5: 92.23%
+Val   - Loss: 2.6950, Acc@1: 55.27%, Acc@5: 76.05%
+LR (head): 0.000019
+LR (backbone): 0.000019
+LR (backbone_stage3): 0.000019
+
+Epoch 334/450 [Stage 3]
+Train - Loss: 1.6899, Acc@1: 80.16%, Acc@5: 92.28%
+Val   - Loss: 2.6584, Acc@1: 54.65%, Acc@5: 77.61%
+LR (head): 0.000019
+LR (backbone): 0.000019
+LR (backbone_stage3): 0.000019
+
+Epoch 335/450 [Stage 3]
+Train - Loss: 1.7095, Acc@1: 79.61%, Acc@5: 91.93%
+Val   - Loss: 2.6630, Acc@1: 56.05%, Acc@5: 77.67%
+LR (head): 0.000018
+LR (backbone): 0.000018
+LR (backbone_stage3): 0.000018
+
+Epoch 336/450 [Stage 3]
+Train - Loss: 1.7008, Acc@1: 79.89%, Acc@5: 92.04%
+Val   - Loss: 2.6749, Acc@1: 55.48%, Acc@5: 77.32%
+LR (head): 0.000018
+LR (backbone): 0.000018
+LR (backbone_stage3): 0.000018
+
+Epoch 337/450 [Stage 3]
+Train - Loss: 1.6761, Acc@1: 80.76%, Acc@5: 92.29%
+Val   - Loss: 2.6936, Acc@1: 55.22%, Acc@5: 77.20%
+LR (head): 0.000018
+LR (backbone): 0.000018
+LR (backbone_stage3): 0.000018
+
+Epoch 338/450 [Stage 3]
+Train - Loss: 1.6798, Acc@1: 80.62%, Acc@5: 92.49%
+Val   - Loss: 2.6545, Acc@1: 55.43%, Acc@5: 78.03%
+LR (head): 0.000018
+LR (backbone): 0.000018
+LR (backbone_stage3): 0.000018
+
+Epoch 339/450 [Stage 3]
+Train - Loss: 1.6839, Acc@1: 81.02%, Acc@5: 92.35%
+Val   - Loss: 2.6625, Acc@1: 55.06%, Acc@5: 77.87%
+LR (head): 0.000017
+LR (backbone): 0.000017
+LR (backbone_stage3): 0.000017
+
+Epoch 340/450 [Stage 3]
+Train - Loss: 1.6779, Acc@1: 80.78%, Acc@5: 92.41%
+Val   - Loss: 2.6975, Acc@1: 54.88%, Acc@5: 77.93%
+LR (head): 0.000017
+LR (backbone): 0.000017
+LR (backbone_stage3): 0.000017
+
+Epoch 341/450 [Stage 3]
+Train - Loss: 1.6620, Acc@1: 81.41%, Acc@5: 92.71%
+Val   - Loss: 2.6873, Acc@1: 53.61%, Acc@5: 77.97%
+LR (head): 0.000017
+LR (backbone): 0.000017
+LR (backbone_stage3): 0.000017
+
+Epoch 342/450 [Stage 3]
+Train - Loss: 1.6760, Acc@1: 80.65%, Acc@5: 92.41%
+Val   - Loss: 2.6776, Acc@1: 54.83%, Acc@5: 77.25%
+LR (head): 0.000017
+LR (backbone): 0.000017
+LR (backbone_stage3): 0.000017
+
+Epoch 343/450 [Stage 3]
+Train - Loss: 1.6546, Acc@1: 81.09%, Acc@5: 92.80%
+Val   - Loss: 2.6582, Acc@1: 54.86%, Acc@5: 78.18%
+LR (head): 0.000016
+LR (backbone): 0.000016
+LR (backbone_stage3): 0.000016
+
+Epoch 344/450 [Stage 3]
+Train - Loss: 1.6757, Acc@1: 80.89%, Acc@5: 92.32%
+Val   - Loss: 2.7123, Acc@1: 54.33%, Acc@5: 76.99%
+LR (head): 0.000016
+LR (backbone): 0.000016
+LR (backbone_stage3): 0.000016
+
+Epoch 345/450 [Stage 3]
+Train - Loss: 1.6456, Acc@1: 81.76%, Acc@5: 92.76%
+Val   - Loss: 2.6830, Acc@1: 55.37%, Acc@5: 77.69%
+LR (head): 0.000016
+LR (backbone): 0.000016
+LR (backbone_stage3): 0.000016
+
+Epoch 346/450 [Stage 3]
+Train - Loss: 1.6443, Acc@1: 81.58%, Acc@5: 92.93%
+Val   - Loss: 2.6860, Acc@1: 55.43%, Acc@5: 77.69%
+LR (head): 0.000015
+LR (backbone): 0.000015
+LR (backbone_stage3): 0.000015
+
+Epoch 347/450 [Stage 3]
+Train - Loss: 1.6577, Acc@1: 81.44%, Acc@5: 92.64%
+Val   - Loss: 2.6749, Acc@1: 55.35%, Acc@5: 77.85%
+LR (head): 0.000015
+LR (backbone): 0.000015
+LR (backbone_stage3): 0.000015
+
+Epoch 348/450 [Stage 3]
+Train - Loss: 1.6321, Acc@1: 82.11%, Acc@5: 92.96%
+Val   - Loss: 2.7176, Acc@1: 54.16%, Acc@5: 76.26%
+LR (head): 0.000015
+LR (backbone): 0.000015
+LR (backbone_stage3): 0.000015
+
+Epoch 349/450 [Stage 3]
+Train - Loss: 1.6380, Acc@1: 81.70%, Acc@5: 92.72%
+Val   - Loss: 2.6697, Acc@1: 54.92%, Acc@5: 78.08%
+LR (head): 0.000015
+LR (backbone): 0.000015
+LR (backbone_stage3): 0.000015
+
+Epoch 350/450 [Stage 3]
+Train - Loss: 1.6434, Acc@1: 81.73%, Acc@5: 92.82%
+Val   - Loss: 2.6924, Acc@1: 54.94%, Acc@5: 77.27%
+LR (head): 0.000014
+LR (backbone): 0.000014
+LR (backbone_stage3): 0.000014
+
+Epoch 351/450 [Stage 3]
+Train - Loss: 1.6255, Acc@1: 82.14%, Acc@5: 92.98%
+Val   - Loss: 2.6926, Acc@1: 54.63%, Acc@5: 77.64%
+LR (head): 0.000014
+LR (backbone): 0.000014
+LR (backbone_stage3): 0.000014
+
+Epoch 352/450 [Stage 3]
+Train - Loss: 1.6362, Acc@1: 82.24%, Acc@5: 93.00%
+Val   - Loss: 2.7070, Acc@1: 54.76%, Acc@5: 77.48%
+LR (head): 0.000014
+LR (backbone): 0.000014
+LR (backbone_stage3): 0.000014
+
+Epoch 353/450 [Stage 3]
+Train - Loss: 1.6271, Acc@1: 82.15%, Acc@5: 93.02%
+Val   - Loss: 2.7429, Acc@1: 54.13%, Acc@5: 76.05%
+LR (head): 0.000014
+LR (backbone): 0.000014
+LR (backbone_stage3): 0.000014
+
+Epoch 354/450 [Stage 3]
+Train - Loss: 1.6128, Acc@1: 82.70%, Acc@5: 93.47%
+Val   - Loss: 2.7121, Acc@1: 53.74%, Acc@5: 77.25%
+LR (head): 0.000013
+LR (backbone): 0.000013
+LR (backbone_stage3): 0.000013
+
+Epoch 355/450 [Stage 3]
+Train - Loss: 1.6244, Acc@1: 82.21%, Acc@5: 92.99%
+Val   - Loss: 2.7561, Acc@1: 53.25%, Acc@5: 77.09%
+LR (head): 0.000013
+LR (backbone): 0.000013
+LR (backbone_stage3): 0.000013
+
+Epoch 356/450 [Stage 3]
+Train - Loss: 1.6399, Acc@1: 82.24%, Acc@5: 92.97%
+Val   - Loss: 2.7097, Acc@1: 55.07%, Acc@5: 77.48%
+LR (head): 0.000013
+LR (backbone): 0.000013
+LR (backbone_stage3): 0.000013
+
+Epoch 357/450 [Stage 3]
+Train - Loss: 1.6185, Acc@1: 82.77%, Acc@5: 93.23%
+Val   - Loss: 2.7291, Acc@1: 53.67%, Acc@5: 76.75%
+LR (head): 0.000013
+LR (backbone): 0.000013
+LR (backbone_stage3): 0.000013
+
+Epoch 358/450 [Stage 3]
+Train - Loss: 1.6097, Acc@1: 82.65%, Acc@5: 93.56%
+Val   - Loss: 2.7408, Acc@1: 53.67%, Acc@5: 77.27%
+LR (head): 0.000013
+LR (backbone): 0.000013
+LR (backbone_stage3): 0.000013
+
+Epoch 359/450 [Stage 3]
+Train - Loss: 1.6320, Acc@1: 81.93%, Acc@5: 92.70%
+Val   - Loss: 2.7175, Acc@1: 54.23%, Acc@5: 77.64%
+LR (head): 0.000012
+LR (backbone): 0.000012
+LR (backbone_stage3): 0.000012
+
+Epoch 360/450 [Stage 3]
+Train - Loss: 1.6314, Acc@1: 82.12%, Acc@5: 92.74%
+Val   - Loss: 2.7291, Acc@1: 54.45%, Acc@5: 76.75%
+LR (head): 0.000012
+LR (backbone): 0.000012
+LR (backbone_stage3): 0.000012
+
+Epoch 361/450 [Stage 3]
+Train - Loss: 1.6230, Acc@1: 82.17%, Acc@5: 93.05%
+Val   - Loss: 2.7233, Acc@1: 54.08%, Acc@5: 77.71%
+LR (head): 0.000012
+LR (backbone): 0.000012
+LR (backbone_stage3): 0.000012
+
+Epoch 362/450 [Stage 3]
+Train - Loss: 1.6062, Acc@1: 82.74%, Acc@5: 93.17%
+Val   - Loss: 2.7031, Acc@1: 54.00%, Acc@5: 77.56%
+LR (head): 0.000012
+LR (backbone): 0.000012
+LR (backbone_stage3): 0.000012
+
+Epoch 363/450 [Stage 3]
+Train - Loss: 1.6069, Acc@1: 82.85%, Acc@5: 93.20%
+Val   - Loss: 2.6949, Acc@1: 54.94%, Acc@5: 77.95%
+LR (head): 0.000011
+LR (backbone): 0.000011
+LR (backbone_stage3): 0.000011
+
+Epoch 364/450 [Stage 3]
+Train - Loss: 1.5943, Acc@1: 82.91%, Acc@5: 93.54%
+Val   - Loss: 2.6738, Acc@1: 55.09%, Acc@5: 78.08%
+LR (head): 0.000011
+LR (backbone): 0.000011
+LR (backbone_stage3): 0.000011
+
+Epoch 365/450 [Stage 3]
+Train - Loss: 1.5977, Acc@1: 82.81%, Acc@5: 93.53%
+Val   - Loss: 2.6760, Acc@1: 55.56%, Acc@5: 78.08%
+LR (head): 0.000011
+LR (backbone): 0.000011
+LR (backbone_stage3): 0.000011
+
+Epoch 366/450 [Stage 3]
+Train - Loss: 1.5835, Acc@1: 83.59%, Acc@5: 93.95%
+Val   - Loss: 2.6884, Acc@1: 54.70%, Acc@5: 77.85%
+LR (head): 0.000011
+LR (backbone): 0.000011
+LR (backbone_stage3): 0.000011
+
+Epoch 367/450 [Stage 3]
+Train - Loss: 1.5938, Acc@1: 83.14%, Acc@5: 93.49%
+Val   - Loss: 2.7257, Acc@1: 53.38%, Acc@5: 76.60%
+LR (head): 0.000010
+LR (backbone): 0.000010
+LR (backbone_stage3): 0.000010
+
+Epoch 368/450 [Stage 3]
+Train - Loss: 1.5900, Acc@1: 83.38%, Acc@5: 93.62%
+Val   - Loss: 2.6928, Acc@1: 54.16%, Acc@5: 77.85%
+LR (head): 0.000010
+LR (backbone): 0.000010
+LR (backbone_stage3): 0.000010
+
+Epoch 369/450 [Stage 3]
+Train - Loss: 1.6042, Acc@1: 82.94%, Acc@5: 93.33%
+Val   - Loss: 2.6988, Acc@1: 54.53%, Acc@5: 77.85%
+LR (head): 0.000010
+LR (backbone): 0.000010
+LR (backbone_stage3): 0.000010
+
+Epoch 370/450 [Stage 3]
+Train - Loss: 1.5919, Acc@1: 82.95%, Acc@5: 93.39%
+Val   - Loss: 2.6954, Acc@1: 54.29%, Acc@5: 77.77%
+LR (head): 0.000010
+LR (backbone): 0.000010
+LR (backbone_stage3): 0.000010
+
+Epoch 371/450 [Stage 3]
+Train - Loss: 1.5688, Acc@1: 84.06%, Acc@5: 93.95%
+Val   - Loss: 2.7027, Acc@1: 54.18%, Acc@5: 77.15%
+LR (head): 0.000010
+LR (backbone): 0.000010
+LR (backbone_stage3): 0.000010
+
+Epoch 372/450 [Stage 3]
+Train - Loss: 1.6059, Acc@1: 82.89%, Acc@5: 93.34%
+Val   - Loss: 2.7069, Acc@1: 54.18%, Acc@5: 76.36%
+LR (head): 0.000009
+LR (backbone): 0.000009
+LR (backbone_stage3): 0.000009
+
+Epoch 373/450 [Stage 3]
+Train - Loss: 1.5877, Acc@1: 83.54%, Acc@5: 93.32%
+Val   - Loss: 2.7107, Acc@1: 54.73%, Acc@5: 76.52%
+LR (head): 0.000009
+LR (backbone): 0.000009
+LR (backbone_stage3): 0.000009
+
+Epoch 374/450 [Stage 3]
+Train - Loss: 1.5810, Acc@1: 83.34%, Acc@5: 93.66%
+Val   - Loss: 2.6929, Acc@1: 55.19%, Acc@5: 77.32%
+LR (head): 0.000009
+LR (backbone): 0.000009
+LR (backbone_stage3): 0.000009
+
+Epoch 375/450 [Stage 3]
+Train - Loss: 1.5793, Acc@1: 83.60%, Acc@5: 93.71%
+Val   - Loss: 2.6621, Acc@1: 55.51%, Acc@5: 77.87%
+LR (head): 0.000009
+LR (backbone): 0.000009
+LR (backbone_stage3): 0.000009
+
+Epoch 376/450 [Stage 3]
+Train - Loss: 1.5792, Acc@1: 83.87%, Acc@5: 93.70%
+Val   - Loss: 2.6908, Acc@1: 55.17%, Acc@5: 77.48%
+LR (head): 0.000009
+LR (backbone): 0.000009
+LR (backbone_stage3): 0.000009
+
+Epoch 377/450 [Stage 3]
+Train - Loss: 1.5786, Acc@1: 83.96%, Acc@5: 93.52%
+Val   - Loss: 2.6928, Acc@1: 54.63%, Acc@5: 77.40%
+LR (head): 0.000008
+LR (backbone): 0.000008
+LR (backbone_stage3): 0.000008
+
+Epoch 378/450 [Stage 3]
+Train - Loss: 1.5757, Acc@1: 84.18%, Acc@5: 93.64%
+Val   - Loss: 2.7058, Acc@1: 54.23%, Acc@5: 77.40%
+LR (head): 0.000008
+LR (backbone): 0.000008
+LR (backbone_stage3): 0.000008
+
+Epoch 379/450 [Stage 3]
+Train - Loss: 1.5714, Acc@1: 83.82%, Acc@5: 93.75%
+Val   - Loss: 2.6928, Acc@1: 54.86%, Acc@5: 77.17%
+LR (head): 0.000008
+LR (backbone): 0.000008
+LR (backbone_stage3): 0.000008
+
+Epoch 380/450 [Stage 3]
+Train - Loss: 1.5592, Acc@1: 84.00%, Acc@5: 94.02%
+Val   - Loss: 2.6783, Acc@1: 55.04%, Acc@5: 77.79%
+LR (head): 0.000008
+LR (backbone): 0.000008
+LR (backbone_stage3): 0.000008
+
+Epoch 381/450 [Stage 3]
+Train - Loss: 1.5671, Acc@1: 83.96%, Acc@5: 93.93%
+Val   - Loss: 2.6968, Acc@1: 55.04%, Acc@5: 77.56%
+LR (head): 0.000008
+LR (backbone): 0.000008
+LR (backbone_stage3): 0.000008
+
+Epoch 382/450 [Stage 3]
+Train - Loss: 1.5774, Acc@1: 84.05%, Acc@5: 93.86%
+Val   - Loss: 2.7168, Acc@1: 54.90%, Acc@5: 77.40%
+LR (head): 0.000007
+LR (backbone): 0.000007
+LR (backbone_stage3): 0.000007
+
+Epoch 383/450 [Stage 3]
+Train - Loss: 1.5533, Acc@1: 84.59%, Acc@5: 94.07%
+Val   - Loss: 2.6996, Acc@1: 54.96%, Acc@5: 77.25%
+LR (head): 0.000007
+LR (backbone): 0.000007
+LR (backbone_stage3): 0.000007
+
+Epoch 384/450 [Stage 3]
+Train - Loss: 1.5773, Acc@1: 83.92%, Acc@5: 93.41%
+Val   - Loss: 2.7099, Acc@1: 55.76%, Acc@5: 77.40%
+LR (head): 0.000007
+LR (backbone): 0.000007
+LR (backbone_stage3): 0.000007
+
+Epoch 385/450 [Stage 3]
+Train - Loss: 1.5665, Acc@1: 84.15%, Acc@5: 93.70%
+Val   - Loss: 2.7113, Acc@1: 55.43%, Acc@5: 76.85%
+LR (head): 0.000007
+LR (backbone): 0.000007
+LR (backbone_stage3): 0.000007
+
+Epoch 386/450 [Stage 3]
+Train - Loss: 1.5601, Acc@1: 84.31%, Acc@5: 94.03%
+Val   - Loss: 2.7203, Acc@1: 54.57%, Acc@5: 76.93%
+LR (head): 0.000007
+LR (backbone): 0.000007
+LR (backbone_stage3): 0.000007
+
+Epoch 387/450 [Stage 3]
+Train - Loss: 1.5557, Acc@1: 84.69%, Acc@5: 93.88%
+Val   - Loss: 2.6968, Acc@1: 55.48%, Acc@5: 76.85%
+LR (head): 0.000007
+LR (backbone): 0.000007
+LR (backbone_stage3): 0.000007
+
+Epoch 388/450 [Stage 3]
+Train - Loss: 1.5489, Acc@1: 84.09%, Acc@5: 94.02%
+Val   - Loss: 2.6970, Acc@1: 55.12%, Acc@5: 77.09%
+LR (head): 0.000006
+LR (backbone): 0.000006
+LR (backbone_stage3): 0.000006
+
+Epoch 389/450 [Stage 3]
+Train - Loss: 1.5441, Acc@1: 84.70%, Acc@5: 94.20%
+Val   - Loss: 2.6982, Acc@1: 55.37%, Acc@5: 76.93%
+LR (head): 0.000006
+LR (backbone): 0.000006
+LR (backbone_stage3): 0.000006
+
+Epoch 390/450 [Stage 3]
+Train - Loss: 1.5655, Acc@1: 84.01%, Acc@5: 93.61%
+Val   - Loss: 2.6989, Acc@1: 55.12%, Acc@5: 77.17%
+LR (head): 0.000006
+LR (backbone): 0.000006
+LR (backbone_stage3): 0.000006
+
+Epoch 391/450 [Stage 3]
+Train - Loss: 1.5567, Acc@1: 84.49%, Acc@5: 93.98%
+Val   - Loss: 2.6794, Acc@1: 55.84%, Acc@5: 77.56%
+LR (head): 0.000006
+LR (backbone): 0.000006
+LR (backbone_stage3): 0.000006
+
+Epoch 392/450 [Stage 3]
+Train - Loss: 1.5620, Acc@1: 84.01%, Acc@5: 93.82%
+Val   - Loss: 2.6896, Acc@1: 55.37%, Acc@5: 77.40%
+LR (head): 0.000006
+LR (backbone): 0.000006
+LR (backbone_stage3): 0.000006
+
+Epoch 393/450 [Stage 3]
+Train - Loss: 1.5600, Acc@1: 84.65%, Acc@5: 93.85%
+Val   - Loss: 2.7184, Acc@1: 54.16%, Acc@5: 76.62%
+LR (head): 0.000006
+LR (backbone): 0.000006
+LR (backbone_stage3): 0.000006
+
+Epoch 394/450 [Stage 3]
+Train - Loss: 1.5509, Acc@1: 84.44%, Acc@5: 94.12%
+Val   - Loss: 2.7068, Acc@1: 54.16%, Acc@5: 76.62%
+LR (head): 0.000005
+LR (backbone): 0.000005
+LR (backbone_stage3): 0.000005
+
+Epoch 395/450 [Stage 3]
+Train - Loss: 1.5489, Acc@1: 84.61%, Acc@5: 93.97%
+Val   - Loss: 2.6971, Acc@1: 55.74%, Acc@5: 76.93%
+LR (head): 0.000005
+LR (backbone): 0.000005
+LR (backbone_stage3): 0.000005
+
+Epoch 396/450 [Stage 3]
+Train - Loss: 1.5418, Acc@1: 84.78%, Acc@5: 94.26%
+Val   - Loss: 2.7055, Acc@1: 55.19%, Acc@5: 76.44%
+LR (head): 0.000005
+LR (backbone): 0.000005
+LR (backbone_stage3): 0.000005
+
+Epoch 397/450 [Stage 3]
+Train - Loss: 1.5297, Acc@1: 85.32%, Acc@5: 94.25%
+Val   - Loss: 2.6881, Acc@1: 55.35%, Acc@5: 77.25%
+LR (head): 0.000005
+LR (backbone): 0.000005
+LR (backbone_stage3): 0.000005
+
+Epoch 398/450 [Stage 3]
+Train - Loss: 1.5549, Acc@1: 84.43%, Acc@5: 93.83%
+Val   - Loss: 2.7009, Acc@1: 55.27%, Acc@5: 76.70%
+LR (head): 0.000005
+LR (backbone): 0.000005
+LR (backbone_stage3): 0.000005
+
+Epoch 399/450 [Stage 3]
+Train - Loss: 1.5500, Acc@1: 84.67%, Acc@5: 93.99%
+Val   - Loss: 2.6949, Acc@1: 55.58%, Acc@5: 76.93%
+LR (head): 0.000005
+LR (backbone): 0.000005
+LR (backbone_stage3): 0.000005
+
+Epoch 400/450 [Stage 3]
+Train - Loss: 1.5358, Acc@1: 84.95%, Acc@5: 94.30%
+Val   - Loss: 2.6928, Acc@1: 55.58%, Acc@5: 76.78%
+LR (head): 0.000005
+LR (backbone): 0.000005
+LR (backbone_stage3): 0.000005
+
+Epoch 401/450 [Stage 3]
+Train - Loss: 1.5265, Acc@1: 85.10%, Acc@5: 94.36%
+Val   - Loss: 2.7022, Acc@1: 55.12%, Acc@5: 76.70%
+LR (head): 0.000004
+LR (backbone): 0.000004
+LR (backbone_stage3): 0.000004
+
+Epoch 402/450 [Stage 3]
+Train - Loss: 1.5519, Acc@1: 84.92%, Acc@5: 93.63%
+Val   - Loss: 2.7063, Acc@1: 55.35%, Acc@5: 76.62%
+LR (head): 0.000004
+LR (backbone): 0.000004
+LR (backbone_stage3): 0.000004
+
+Epoch 403/450 [Stage 3]
+Train - Loss: 1.5149, Acc@1: 85.59%, Acc@5: 94.68%
+Val   - Loss: 2.7072, Acc@1: 54.80%, Acc@5: 77.25%
+LR (head): 0.000004
+LR (backbone): 0.000004
+LR (backbone_stage3): 0.000004
+
+Epoch 404/450 [Stage 3]
+Train - Loss: 1.5332, Acc@1: 85.29%, Acc@5: 94.24%
+Val   - Loss: 2.6976, Acc@1: 55.04%, Acc@5: 77.09%
+LR (head): 0.000004
+LR (backbone): 0.000004
+LR (backbone_stage3): 0.000004
+
+Epoch 405/450 [Stage 3]
+Train - Loss: 1.5299, Acc@1: 84.76%, Acc@5: 94.50%
+Val   - Loss: 2.6877, Acc@1: 56.15%, Acc@5: 77.17%
+LR (head): 0.000004
+LR (backbone): 0.000004
+LR (backbone_stage3): 0.000004
+
+Epoch 406/450 [Stage 3]
+Train - Loss: 1.5205, Acc@1: 85.39%, Acc@5: 94.73%
+Val   - Loss: 2.7082, Acc@1: 55.33%, Acc@5: 76.85%
+LR (head): 0.000004
+LR (backbone): 0.000004
+LR (backbone_stage3): 0.000004
+
+Epoch 407/450 [Stage 3]
+Train - Loss: 1.5363, Acc@1: 85.13%, Acc@5: 94.08%
+Val   - Loss: 2.7111, Acc@1: 54.70%, Acc@5: 76.85%
+LR (head): 0.000004
+LR (backbone): 0.000004
+LR (backbone_stage3): 0.000004
+
+Epoch 408/450 [Stage 3]
+Train - Loss: 1.5230, Acc@1: 85.74%, Acc@5: 94.39%
+Val   - Loss: 2.7011, Acc@1: 54.86%, Acc@5: 77.01%
+LR (head): 0.000004
+LR (backbone): 0.000004
+LR (backbone_stage3): 0.000004
+
+Epoch 409/450 [Stage 3]
+Train - Loss: 1.5390, Acc@1: 84.80%, Acc@5: 94.15%
+Val   - Loss: 2.7094, Acc@1: 55.02%, Acc@5: 76.62%
+LR (head): 0.000003
+LR (backbone): 0.000003
+LR (backbone_stage3): 0.000003
+
+Epoch 410/450 [Stage 3]
+Train - Loss: 1.5234, Acc@1: 85.34%, Acc@5: 94.36%
+Val   - Loss: 2.7034, Acc@1: 54.80%, Acc@5: 77.17%
+LR (head): 0.000003
+LR (backbone): 0.000003
+LR (backbone_stage3): 0.000003
+
+Epoch 411/450 [Stage 3]
+Train - Loss: 1.5267, Acc@1: 85.03%, Acc@5: 94.18%
+Val   - Loss: 2.6946, Acc@1: 55.51%, Acc@5: 77.48%
+LR (head): 0.000003
+LR (backbone): 0.000003
+LR (backbone_stage3): 0.000003
+
+Epoch 412/450 [Stage 3]
+Train - Loss: 1.5198, Acc@1: 85.29%, Acc@5: 94.31%
+Val   - Loss: 2.6949, Acc@1: 55.74%, Acc@5: 76.78%
+LR (head): 0.000003
+LR (backbone): 0.000003
+LR (backbone_stage3): 0.000003
+
+Epoch 413/450 [Stage 3]
+Train - Loss: 1.5307, Acc@1: 85.07%, Acc@5: 94.18%
+Val   - Loss: 2.7052, Acc@1: 55.12%, Acc@5: 76.62%
+LR (head): 0.000003
+LR (backbone): 0.000003
+LR (backbone_stage3): 0.000003
+
+Epoch 414/450 [Stage 3]
+Train - Loss: 1.5224, Acc@1: 85.20%, Acc@5: 94.57%
+Val   - Loss: 2.6876, Acc@1: 54.96%, Acc@5: 77.32%
+LR (head): 0.000003
+LR (backbone): 0.000003
+LR (backbone_stage3): 0.000003
+
+Epoch 415/450 [Stage 3]
+Train - Loss: 1.5211, Acc@1: 85.62%, Acc@5: 94.59%
+Val   - Loss: 2.6937, Acc@1: 55.27%, Acc@5: 77.56%
+LR (head): 0.000003
+LR (backbone): 0.000003
+LR (backbone_stage3): 0.000003
+
+Epoch 416/450 [Stage 3]
+Train - Loss: 1.5112, Acc@1: 85.80%, Acc@5: 94.45%
+Val   - Loss: 2.6969, Acc@1: 55.74%, Acc@5: 77.40%
+LR (head): 0.000003
+LR (backbone): 0.000003
+LR (backbone_stage3): 0.000003
+
+Epoch 417/450 [Stage 3]
+Train - Loss: 1.5313, Acc@1: 85.32%, Acc@5: 94.07%
+Val   - Loss: 2.6875, Acc@1: 55.58%, Acc@5: 77.40%
+LR (head): 0.000003
+LR (backbone): 0.000003
+LR (backbone_stage3): 0.000003
+
+Epoch 418/450 [Stage 3]
+Train - Loss: 1.5254, Acc@1: 85.46%, Acc@5: 94.24%
+Val   - Loss: 2.6863, Acc@1: 55.58%, Acc@5: 77.87%
+LR (head): 0.000003
+LR (backbone): 0.000003
+LR (backbone_stage3): 0.000003
+
+Epoch 419/450 [Stage 3]
+Train - Loss: 1.5251, Acc@1: 85.39%, Acc@5: 94.42%
+Val   - Loss: 2.7049, Acc@1: 55.58%, Acc@5: 77.32%
+LR (head): 0.000002
+LR (backbone): 0.000002
+LR (backbone_stage3): 0.000002
+
+Epoch 420/450 [Stage 3]
+Train - Loss: 1.5011, Acc@1: 86.28%, Acc@5: 94.62%
+Val   - Loss: 2.6911, Acc@1: 55.82%, Acc@5: 77.79%
+LR (head): 0.000002
+LR (backbone): 0.000002
+LR (backbone_stage3): 0.000002
+
+Epoch 421/450 [Stage 3]
+Train - Loss: 1.5377, Acc@1: 84.97%, Acc@5: 93.91%
+Val   - Loss: 2.6939, Acc@1: 55.35%, Acc@5: 77.32%
+LR (head): 0.000002
+LR (backbone): 0.000002
+LR (backbone_stage3): 0.000002
+
+Epoch 422/450 [Stage 3]
+Train - Loss: 1.5334, Acc@1: 85.39%, Acc@5: 94.01%
+Val   - Loss: 2.7052, Acc@1: 55.43%, Acc@5: 77.09%
+LR (head): 0.000002
+LR (backbone): 0.000002
+LR (backbone_stage3): 0.000002
+
+Epoch 423/450 [Stage 3]
+Train - Loss: 1.5156, Acc@1: 85.47%, Acc@5: 94.28%
+Val   - Loss: 2.7090, Acc@1: 55.27%, Acc@5: 77.48%
+LR (head): 0.000002
+LR (backbone): 0.000002
+LR (backbone_stage3): 0.000002
+
+Epoch 424/450 [Stage 3]
+Train - Loss: 1.5197, Acc@1: 85.18%, Acc@5: 94.40%
+Val   - Loss: 2.7083, Acc@1: 55.35%, Acc@5: 77.17%
+LR (head): 0.000002
+LR (backbone): 0.000002
+LR (backbone_stage3): 0.000002
+
+Epoch 425/450 [Stage 3]
+Train - Loss: 1.5086, Acc@1: 85.94%, Acc@5: 94.55%
+Val   - Loss: 2.7012, Acc@1: 55.98%, Acc@5: 77.40%
+LR (head): 0.000002
+LR (backbone): 0.000002
+LR (backbone_stage3): 0.000002
