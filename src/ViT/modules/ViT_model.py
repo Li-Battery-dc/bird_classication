@@ -58,7 +58,8 @@ class VisionTransformer(nn.Module):
         num_heads: int = 12,
         mlp_ratio: float = 4.0,
         dropout: float = 0.1,
-        attention_dropout: float = 0.1
+        attention_dropout: float = 0.1,
+        drop_path_list: Optional[list] = None,
     ):
         super().__init__()
         
@@ -84,16 +85,20 @@ class VisionTransformer(nn.Module):
                 num_heads=num_heads,
                 mlp_ratio=mlp_ratio,
                 dropout=dropout,
-                attn_dropout=attention_dropout
+                attn_dropout=attention_dropout,
+                drop_path_rate=drop_path_list[i]
             )
-            for _ in range(depth)
+            for i in range(depth)
         ])
         
         # 3. 最终的Layer Norm
         self.norm = nn.LayerNorm(embed_dim)
         
         # 4. 分类头
-        self.head = nn.Linear(embed_dim, num_classes)
+        self.head = nn.Sequential(
+            nn.Dropout(dropout), # 加一个Dropout层防止过拟合
+            nn.Linear(embed_dim, num_classes)
+        )
         
         # 初始化权重
         self._init_weights()
@@ -110,8 +115,8 @@ class VisionTransformer(nn.Module):
         nn.init.normal_(self.patch_embed.pos_embedding, std=0.02)
         
         # 初始化分类头 - 使用小的随机初始化而不是0
-        nn.init.normal_(self.head.weight, std=0.01)
-        nn.init.zeros_(self.head.bias)
+        nn.init.normal_(self.head[1].weight, std=0.01)
+        nn.init.zeros_(self.head[1].bias)
     
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         """
@@ -368,6 +373,7 @@ def create_vit_base_patch16(config=None):
         mlp_ratio = config.mlp_ratio
         dropout = config.dropout
         attention_dropout = config.attention_dropout
+        dropout_path_rate = config.drop_path_rate
     else:
         # 使用默认值或传入的参数
         num_classes = 200
@@ -381,7 +387,10 @@ def create_vit_base_patch16(config=None):
         mlp_ratio = 4.0
         dropout = 0.1
         attention_dropout = 0.1
+        dropout_path_rate = 0.2
     
+    # 线性插值生成drop path rate列表
+    dpr = [x.item() for x in torch.linspace(0, dropout_path_rate, depth)]  # Stochastic Depth decay rule
     model = VisionTransformer(
         img_size=img_size,
         patch_size=patch_size,
@@ -392,7 +401,8 @@ def create_vit_base_patch16(config=None):
         num_heads=num_heads,
         mlp_ratio=mlp_ratio,
         dropout=dropout,
-        attention_dropout=attention_dropout
+        attention_dropout=attention_dropout,
+        drop_path_list=dpr,
     )
     
     if pretrained:

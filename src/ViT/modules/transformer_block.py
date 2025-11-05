@@ -7,6 +7,7 @@ import torch.nn as nn
 from .attention import MultiHeadAttention
 from .mlp import MLP
 
+from timm.models.layers import DropPath
 
 class TransformerBlock(nn.Module):
     """
@@ -30,7 +31,8 @@ class TransformerBlock(nn.Module):
         num_heads: int = 12,
         mlp_ratio: float = 4.0,
         dropout: float = 0.0,
-        attn_dropout: float = 0.0
+        attn_dropout: float = 0.0,
+        drop_path_rate: float = 0.0,
     ):
         super().__init__()
         
@@ -59,6 +61,9 @@ class TransformerBlock(nn.Module):
         
         # Dropout (在残差连接前)
         self.drop2 = nn.Dropout(dropout)
+
+        # Stochastic Depth (DropPath)
+        self.drop_path = DropPath(drop_path_rate) if drop_path_rate > 0.0 else nn.Identity()
     
     def forward(self, x: torch.Tensor, return_attention: bool = False):
         """
@@ -82,14 +87,14 @@ class TransformerBlock(nn.Module):
             attn = None
         x = self.drop1(x)
         # Residual connection
-        x = x + shortcut
+        x = self.drop_path(x) + shortcut
         
         # 层2：
         shortcut = x
         x = self.norm2(x)
         x = self.mlp(x)
         x = self.drop2(x)
-        x = x + shortcut
+        x = self.drop_path(x) + shortcut
         
         if return_attention:
             return x, attn

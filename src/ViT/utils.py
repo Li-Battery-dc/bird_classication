@@ -1,8 +1,3 @@
-"""
-ViT训练工具函数
-包含数据增强、学习率调度等
-"""
-
 import torch
 import torch.nn as nn
 import torchvision.transforms as transforms
@@ -130,10 +125,18 @@ class LRScheduler:
     """
     连续训练的学习率调度器
     Warmup + Cosine Annealing学习率调度器
+    Layer-wise Cosine LR Scheduler with Warmup and Layer Decay
+    自动按照模型层数调整每层的学习率
     
-    支持多参数组，每个参数组可以有不同的学习率缩放因子
-    前warmup_epochs个epoch线性增长学习率
-    之后使用cosine annealing衰减到min_lr
+    参数：
+        optimizer: torch.optim.Optimizer
+        base_lr: float, 基础学习率(head层)
+        min_lr: float, 
+        warmup_epochs: int, warmup 轮数
+        total_epochs: int, 总训练轮数
+        layer_decay: float, 每层学习率衰减比例 (default=0.75)
+        num_layers: int, 模型层数 (default=12)
+        last_epoch: int, 上次训练的最后一个epoch (default=-1)
     """
     
     def __init__(
@@ -143,7 +146,9 @@ class LRScheduler:
         total_epochs: int,
         base_lr: float,
         min_lr: float = 1e-6,
-        warmup_start_lr: float = 1e-6
+        warmup_start_lr: float = 1e-6,
+        layer_decay: float = 0.75,
+        num_layers: int = 12
     ):
         self.optimizer = optimizer
         self.warmup_epochs = warmup_epochs
@@ -151,36 +156,39 @@ class LRScheduler:
         self.base_lr = base_lr
         self.min_lr = min_lr
         self.warmup_start_lr = warmup_start_lr
+        self.layer_decay = layer_decay
+        self.num_layers = num_layers
         
-        # 保存每个参数组的学习率缩放因子
-        self.lr_scales = []
-        for param_group in optimizer.param_groups:
-            scale = param_group.get('lr', base_lr) / base_lr
-            self.lr_scales.append(scale)
-    
-    def step(self, epoch: int):
-        """更新学习率"""
+        # 逐层scale因子
+        self.layer_scales = [
+            self.layer_decay ** (self.num_layers - i)
+            for i in range(self.num_layers)
+        ]
+        self.layer_scales.append(1.0) # head
+
+    def get_lr(self, epoch):
+        # 当前 epoch 的进度比例
         if epoch < self.warmup_epochs:
-            # Warmup阶段：线性增长
-            base_lr_current = self.warmup_start_lr + \
-                 (self.base_lr - self.warmup_start_lr) * epoch / self.warmup_epochs
+            # 线性 warmup
+            current_base_lr = self.warmup_start_lr + \
+                (self.base_lr - self.warmup_start_lr) * (epoch / self.warmup_epochs)
         else:
-            # Cosine annealing阶段
-            progress = (epoch - self.warmup_epochs) / (self.total_epochs - self.warmup_epochs)
-            base_lr_current = self.min_lr + (self.base_lr - self.min_lr) * \
-                 0.5 * (1 + np.cos(np.pi * progress))
-        
-        # 更新所有参数组的学习率（应用各自的缩放因子）
-        lrs = []
-        for i, param_group in enumerate(self.optimizer.param_groups):
-            if i < len(self.lr_scales):
-                lr = base_lr_current * self.lr_scales[i]
-            else:
-                lr = base_lr_current
+            # Cosine decay
+            progress = (epoch - self.warmup_epochs) / max(1, self.total_epochs - self.warmup_epochs)
+            cosine_factor = 0.5 * (1 + np.cos(np.pi * progress))
+            current_base_lr = self.min_lr + (self.base_lr - self.min_lr) * cosine_factor
+
+        # 按 layer-wise 缩放输出每个 param group 的 lr
+        lrs = [current_base_lr * scale for scale in self.layer_scales[:len(self.optimizer.param_groups)]]
+        return lrs
+    
+    def step(self, epoch=None):
+        """更新学习率"""
+        new_lrs = self.get_lr(epoch)
+        for param_group, lr in zip(self.optimizer.param_groups, new_lrs):
             param_group['lr'] = lr
-            lrs.append(lr)
-        
-        return lrs if len(lrs) > 1 else lrs[0]
+
+        return new_lrs
     
     def get_last_lr(self):
         """获取当前学习率"""
@@ -201,6 +209,7 @@ class SmoothingCrossEntropy(nn.Module):
     
     def forward(self, pred: torch.Tensor, target: torch.Tensor) -> torch.Tensor:
         """
+        支持soft label float 传入
         Args:
             pred: 模型预测 (B, num_classes) logits
             target: 真实标签 (B,) class indices
@@ -210,16 +219,86 @@ class SmoothingCrossEntropy(nn.Module):
         """
         pred = pred.log_softmax(dim=-1)
         
-        # 创建平滑后的标签
-        with torch.no_grad():
-            true_dist = torch.zeros_like(pred)
-            true_dist.fill_(self.smoothing / (pred.size(-1) - 1))
-            true_dist.scatter_(1, target.unsqueeze(1), self.confidence)
-        
-        # 计算KL散度
+        # 如果target已经是soft label, 不需要标签平滑
+        if target.ndim == 2:
+            true_dist = target
+        else:
+            # 否则进行标签平滑
+            with torch.no_grad():
+                true_dist = torch.zeros_like(pred)
+                true_dist.fill_(self.smoothing / (pred.size(-1) - 1))
+                true_dist.scatter_(1, target.unsqueeze(1), self.confidence)
+
         loss = torch.sum(-true_dist * pred, dim=-1).mean()
-        
         return loss
+
+
+def get_parameter_groups(model, base_lr, layer_decay=0.75, weight_decay=0.1):
+    """
+    按 Transformer Block 层级构建 param groups，实现 Layer-wise LR Decay
+    并对 bias 和 LayerNorm 参数不使用 weight decay
+    """
+
+    parameter_group_names = {}
+    parameter_group_vars = {}
+
+    num_layers = model.depth
+    # +1 给 head
+    layer_scales = [layer_decay ** (num_layers - i) for i in range(num_layers)] + [1.0]
+
+    def get_layer_id_for_vit(name):
+        if name.startswith("patch_embed"):
+            return 0  # 输入层
+        elif name.startswith("blocks"):
+            layer_id = int(name.split('.')[1])
+            return layer_id + 1
+        elif name.startswith("norm"):
+            return num_layers  # norm在最后
+        else:
+            return num_layers + 1  # head层
+
+    for name, param in model.named_parameters():
+        if not param.requires_grad:
+            continue
+        layer_id = get_layer_id_for_vit(name)
+       
+
+        # === 按参数类型划分 (decay / no_decay) ===
+        if name.endswith("bias") or "norm" in name or "bn" in name:
+            decay_type = "no_decay"
+        else:
+            decay_type = "decay"
+
+        group_name = f"layer_{layer_id}_{decay_type}"
+
+        if group_name not in parameter_group_names:
+            scale = layer_scales[layer_id] if layer_id < len(layer_scales) else 1.0
+            parameter_group_names[group_name] = {
+                "params": [],
+                "lr_scale": scale,
+                "weight_decay": 0.0 if decay_type == "no_decay" else weight_decay,
+            }
+            parameter_group_vars[group_name] = []
+
+        parameter_group_names[group_name]["params"].append(param)
+        parameter_group_vars[group_name].append(param)
+
+    # for k, v in parameter_group_names.items():
+    #     print(f"Layer group: {k}, lr_scale={v['lr_scale']}, param_count={len(v['params'])}")
+
+    # 构建 optimizer param groups
+    param_groups = []
+    for name, group in parameter_group_names.items():
+        scale = group["lr_scale"]
+        param_groups.append({
+            "params": group["params"], 
+            "lr_scale": scale, 
+            "lr": base_lr * scale,
+            "weight_decay": group["weight_decay"],
+            "name": name
+        })
+
+    return param_groups
 
 
 def accuracy(output: torch.Tensor, target: torch.Tensor, topk=(1,)):
@@ -228,7 +307,7 @@ def accuracy(output: torch.Tensor, target: torch.Tensor, topk=(1,)):
     
     Args:
         output: 模型输出 (B, num_classes)
-        target: 真实标签 (B,)
+        target: 真实标签 (B,), soft label时为 (B, num_classes)
         topk: 要计算的top-k值元组：例如 (1, 5)
         
     Returns:
@@ -240,15 +319,24 @@ def accuracy(output: torch.Tensor, target: torch.Tensor, topk=(1,)):
         
         # 获取top-k预测
         _, pred = output.topk(maxk, dim=1, largest=True, sorted=True)
-        pred = pred.t()  # (maxk, B)
-        correct = pred.eq(target.view(1, -1).expand_as(pred))
-        
-        res = []
-        for k in topk:
-            correct_k = correct[:k].reshape(-1).float().sum(0, keepdim=True)
-            res.append(correct_k.mul_(100.0 / batch_size).item())
-        
-        return res
+
+        if target.ndim == 2:  # soft label 情况, 训练时使用
+            # pred shape: (B, maxk), target shape: (B, num_classes)
+            res = []
+            for k in topk:
+                # 对每个样本，取前k个预测类在soft label中的概率总和
+                correct_probs = target.gather(1, pred[:, :k])  # (B, k)
+                acc_k = correct_probs.sum(dim=1).mean() * 100.0  # 平均加权准确率
+                res.append(acc_k.item())
+            return res
+        else:
+            # 普通 hard label 情况， 验证时使用
+            correct = pred.eq(target.view(-1, 1).expand_as(pred))  # (B, maxk)
+            res = []
+            for k in topk:
+                correct_k = correct[:, :k].reshape(-1).float().sum(0, keepdim=True)
+                res.append(correct_k.mul_(100.0 / batch_size).item())
+            return res
 
 
 def save_checkpoint(
@@ -314,96 +402,6 @@ def load_checkpoint(
         'scheduler_state': scheduler_state,
         'optimizer_state_dict': optimizer_state_dict
     }
-
-
-def get_parameter_groups(model, config):
-    """
-    获取不同学习率的参数组
-    
-    Args:
-        model: ViT模型
-        config: 配置对象
-        
-    Returns:
-        param_groups: 参数组列表
-    """
-    # 分类头参数
-    head_params = list(model.head.parameters())
-    
-    # Backbone参数（除了分类头）
-    backbone_params = [
-        p for n, p in model.named_parameters() 
-        if 'head' not in n and p.requires_grad
-    ]
-    
-    param_groups = [
-        {'params': backbone_params, 'lr': config.stage2_lr_backbone, 'name': 'backbone'},
-        {'params': head_params, 'lr': config.stage2_lr_head, 'name': 'head'}
-    ]
-    
-    return param_groups
-
-
-def get_unfrozen_backbone_params(model):
-    params = [
-        p for n, p in model.named_parameters() 
-        if 'head' not in n and p.requires_grad
-    ]
-    return params
-
-
-def update_optimizer_param_groups(optimizer, model, config, stage: int = 2):
-    """
-    动态更新优化器的参数组
-    多阶段训练使用
-    
-    Args:
-        optimizer: 优化器
-        model: 模型
-        stage: 当前阶段 (1, 2, 3)
-        config: 配置对象
-    """
-    if stage == 2:
-        # Stage 2: 添加解冻的backbone参数
-        unfrozen_params = get_unfrozen_backbone_params(model)
-        if unfrozen_params:
-            optimizer.add_param_group({
-                'params': unfrozen_params,
-                'lr': config.stage2_lr_backbone,
-                'name': 'backbone',
-                'weight_decay': config.weight_decay
-            })
-        # 更新分类头学习率
-        if len(optimizer.param_groups) > 0:
-            optimizer.param_groups[0]['lr'] = config.stage2_lr_head
-            
-    elif stage == 3:
-        # Stage 3: 添加“新”解冻参数，并统一学习率
-        # 1) 已在优化器中的参数集合（用id判断）
-        existing_param_ids = set()
-        for group in optimizer.param_groups:
-            for p in group['params']:
-                existing_param_ids.add(id(p))
-        
-        # 2) 当前可训练的backbone参数（使用原有工具函数）
-        unfrozen_params = get_unfrozen_backbone_params(model)
-        
-        # 3) 过滤出本阶段“新”解冻但尚未被优化器管理的参数
-        new_params = [p for p in unfrozen_params if id(p) not in existing_param_ids]
-        
-        # 4) 如有新参数，则添加一个新的参数组（避免与Stage 2重复）
-        if len(new_params) > 0:
-            optimizer.add_param_group({
-                'params': new_params,
-                'lr': config.stage3_lr,
-                'name': 'backbone_stage3',
-                'weight_decay': config.weight_decay
-            })
-        
-        # 5) 统一所有参数组学习率为 stage3_lr（包括head与已有backbone组）
-        for param_group in optimizer.param_groups:
-            param_group['lr'] = config.stage3_lr
-
 
 if __name__ == '__main__':
     # 测试工具函数

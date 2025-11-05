@@ -2,6 +2,8 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 
+from timm.data.mixup import Mixup
+
 import os
 import json
 import copy
@@ -15,11 +17,9 @@ from .modules.ViT_model import create_vit_base_patch16
 from .config import ViTConfig
 from .utils import (
     set_seed, get_train_transforms, get_val_transforms,
-    LRScheduler, SmoothingCrossEntropy,
-    accuracy, save_checkpoint, load_checkpoint, get_parameter_groups,
-    update_optimizer_param_groups
+    LRScheduler, SmoothingCrossEntropy, get_parameter_groups,
+    accuracy, save_checkpoint, load_checkpoint
 )
-
 
 def train_one_epoch(
     model, 
@@ -28,7 +28,8 @@ def train_one_epoch(
     optimizer, 
     device, 
     epoch, 
-    config
+    config,
+    mixup_fn=None
 ):
     """
     训练一个epoch
@@ -73,7 +74,11 @@ def train_one_epoch(
             images = torch.tensor(images, dtype=torch.float32).to(device)
         
         labels = torch.tensor(labels, dtype=torch.long).to(device)
-        
+
+        # 应用MixUp/CutMix, label会变成soft label
+        if mixup_fn is not None:
+            images, labels = mixup_fn(images, labels)
+
         # 前向传播
         outputs = model(images)
         loss = criterion(outputs, labels)
@@ -205,6 +210,14 @@ def train_main():
             f.write(str(msg) + "\n")
     
     # 数据增强
+    mixup_fn = Mixup(
+        mixup_alpha=config.mixup_params['mixup_alpha'],
+        cutmix_alpha=config.mixup_params['cutmix_alpha'],
+        prob=config.mixup_params['prob'],
+        switch_prob=config.mixup_params['switch_prob'],
+        label_smoothing=config.label_smoothing,
+        num_classes=config.num_classes
+    )
     train_transform = get_train_transforms(config)
     val_transform = get_val_transforms(config)
 
@@ -262,9 +275,9 @@ def train_main():
     criterion = SmoothingCrossEntropy(smoothing=config.label_smoothing)
     
     # 创建优化器
-    # 初始化只包含分类头
+    # 初始化只包含分类头, 没用get_parameter_groups加scale
     optimizer = optim.AdamW(
-        [{'params': model.head.parameters(), 'lr': config.stage1_lr_head, 'name': 'head'}],
+        [{'params': model.head.parameters(), 'lr': config.stage1_base_lr, 'name': 'head'}],
         weight_decay=config.weight_decay,
         betas=config.betas
     )
@@ -272,9 +285,11 @@ def train_main():
         optimizer,
         warmup_epochs=config.warmup_epochs,
         total_epochs=total_epochs,
-        base_lr=config.stage1_lr_head,
+        base_lr=config.stage1_base_lr,
         min_lr=config.min_lr,
-        warmup_start_lr=config.warmup_start_lr
+        warmup_start_lr=config.warmup_start_lr,
+        layer_decay=config.layer_decay,
+        num_layers=model.depth
     )
     
     # 训练状态
@@ -305,12 +320,12 @@ def train_main():
                 model.freeze_backbone()
             elif current_stage == 2:
                 model.unfreeze_last_n_blocks(config.stage2_unfreeze_layers)
-                # 确保优化器参数组与阶段2匹配后再恢复优化器状态
-                update_optimizer_param_groups(optimizer, model, config=config, stage=2)
+                param_groups = get_parameter_groups(model, base_lr=config.stage2_base_lr, layer_decay=config.layer_decay)
             elif current_stage == 3:
                 model.unfreeze_last_n_blocks(config.stage3_unfreeze_layers)
-                update_optimizer_param_groups(optimizer, model, config=config, stage=3)
+                param_groups = get_parameter_groups(model, base_lr=config.stage3_base_lr, layer_decay=config.layer_decay)
 
+            optimizer.param_groups = param_groups
             # 恢复优化器与调度器状态（在参数组对齐之后）
             opt_state = checkpoint_info.get('optimizer_state_dict', None)
             if opt_state is not None:
@@ -338,6 +353,9 @@ def train_main():
     
     try:
         for epoch in range(start_epoch, total_epochs + 1):
+            if epoch == 0 and mixup_fn is not None:
+                logger(f"Using MixUp(alpha={config.mixup_params['mixup_alpha']}) + CutMix(alpha={config.mixup_params['cutmix_alpha']})")
+
             # === Stage切换逻辑 ===
             if epoch == stage1_end + 1 and config.stage2_epochs > 0 and current_stage < 2:
                 logger(f"Entering Stage 2: Unfreezing last {config.stage2_unfreeze_layers} blocks")
@@ -347,15 +365,28 @@ def train_main():
                 # 解冻后几层
                 model.unfreeze_last_n_blocks(config.stage2_unfreeze_layers)
                 model.print_trainable_params()
-                
-                # 动态添加backbone参数到优化器
-                update_optimizer_param_groups(optimizer, model, config=config, stage=2)
-                
-                # 更新scheduler的学习率缩放因子
-                scheduler.lr_scales = []
-                for param_group in optimizer.param_groups:
-                    scale = param_group['lr'] / config.stage1_lr_head
-                    scheduler.lr_scales.append(scale)
+
+                # 更新优化器参数组
+                param_group_2 = get_parameter_groups(
+                    model,
+                    base_lr=config.stage2_base_lr,
+                    layer_decay=config.layer_decay
+                )
+                optimizer = optim.AdamW(
+                    param_group_2,
+                    weight_decay=config.weight_decay,
+                    betas=config.betas
+                )
+                scheduler = LRScheduler(
+                    optimizer,
+                    warmup_epochs=config.warmup_epochs,
+                    total_epochs=total_epochs,
+                    base_lr=config.stage2_base_lr, # 使用阶段2的base_lr
+                    min_lr=config.min_lr,
+                    warmup_start_lr=config.warmup_start_lr,
+                    layer_decay=config.layer_decay,
+                    num_layers=model.depth
+                )
                 
                 logger(f"✓ Optimizer updated with {len(optimizer.param_groups)} parameter groups")
                 for i, pg in enumerate(optimizer.param_groups):
@@ -368,17 +399,29 @@ def train_main():
                 # 只解冻最后N层
                 model.unfreeze_last_n_blocks(config.stage3_unfreeze_layers)
                 model.print_trainable_params()
+
+                # 更新优化器参数组
+                param_group_3 = get_parameter_groups(
+                    model,
+                    base_lr=config.stage3_base_lr,
+                    layer_decay=config.layer_decay
+                )
+                optimizer = optim.AdamW(
+                    param_group_3,
+                    weight_decay=config.weight_decay,
+                    betas=config.betas
+                )
+                scheduler = LRScheduler(
+                    optimizer,
+                    warmup_epochs=config.warmup_epochs,
+                    total_epochs=total_epochs,
+                    base_lr=config.stage3_base_lr, # 使用阶段3的base_lr
+                    min_lr=config.min_lr,
+                    warmup_start_lr=config.warmup_start_lr,
+                    layer_decay=config.layer_decay,
+                    num_layers=model.depth
+                )
     
-                # 动态添加backbone参数到优化器
-                update_optimizer_param_groups(optimizer, model, config=config, stage=3)
-                
-                # 更新scheduler的学习率缩放因子
-                scheduler.lr_scales = []
-                scheduler.base_lr = config.stage3_lr
-                for param_group in optimizer.param_groups:
-                    scale = param_group['lr'] / scheduler.base_lr
-                    scheduler.lr_scales.append(scale)
-                
                 logger(f"✓ Optimizer updated with {len(optimizer.param_groups)} parameter groups")
                 for i, pg in enumerate(optimizer.param_groups):
                     logger(f"  Group {i} ({pg.get('name', 'unknown')}): lr={pg['lr']:.6f}")
@@ -387,7 +430,7 @@ def train_main():
             current_lrs = scheduler.step(epoch - 1)
             
             train_loss, train_acc1, train_acc5 = train_one_epoch(
-                model, train_loader, criterion, optimizer, device, epoch, config
+                model, train_loader, criterion, optimizer, device, epoch, config, mixup_fn
             )
             
             val_loss, val_acc1, val_acc5 = validate(
@@ -402,7 +445,8 @@ def train_main():
             if isinstance(current_lrs, list):
                 for i, lr in enumerate(current_lrs):
                     group_name = optimizer.param_groups[i].get('name', f'group_{i}')
-                    logger(f"LR ({group_name}): {lr:.6f}")
+                    lr_scale = optimizer.param_groups[i].get('lr_scale', 1.0)
+                    logger(f"LR ({group_name}): {lr:.6f} (scale={lr_scale:.3f})")
             else:
                 logger(f"LR: {current_lrs:.6f}")
             
