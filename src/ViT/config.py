@@ -36,28 +36,31 @@ class ViTConfig:
     data_root = '/home/stu12/homework/MLPR/data/'
     result_dir = '/home/stu12/homework/MLPR/result/vit/'
 
-    batch_size_val = 64
+    batch_size_val = 128
      
     # ==================== Checkpoint恢复配置 ====================
     # 从checkpoint恢复训练，设置为checkpoint路径，如 'result/vit/train_xxx/ckpt/checkpoint_epoch_10.pth'
     resume_from_checkpoint = None
     
     # ==================== 阶段1: 只训练分类头 ====================
-    stage1_epochs = 0
+    stage1_epochs = 30
     stage1_batch_size = 384    
-    stage1_base_lr = 5e-4     # LLRD 的base learning rate
+    stage1_warmup_epochs = 5
+    stage1_base_lr = 1e-3     # LLRD 的base learning rate
     stage1_freeze_backbone = True  # 冻结backbone
     
     # ==================== 阶段2: 微调后几层 ====================
-    stage2_epochs = 1          # 设为0则不启用该阶段
+    stage2_epochs = 150          # 设为0则不启用该阶段
     stage2_batch_size = 256
+    stage2_warmup_epochs = 15
     stage2_base_lr = 3e-4     # LLRD 的base learning rate
     stage2_unfreeze_layers = 4  # 解冻最后N个Transformer Block
     
     # ==================== 阶段3: 增加微调层数，统一学习率 ====================
-    stage3_epochs = 1
+    stage3_epochs = 200
     stage3_batch_size = 128
-    stage3_base_lr = 1e-4    
+    stage3_warmup_epochs = 20
+    stage3_base_lr = 1e-4   
     stage3_unfreeze_layers = 8  # 阶段3解冻最后N个Transformer Block（默认为6）
     
     # ==================== 优化器配置 ====================
@@ -67,13 +70,14 @@ class ViTConfig:
     
     # ==================== 学习率调度 ====================
     lr_scheduler = 'cosine'   # 当前使用自己实现的固定调度策略， 这个参数不起作用
-    layer_decay = 0.75       # Layer-wise LR Decay系数
-    warmup_epochs = 5         # Warmup轮数
-    warmup_start_lr = 1e-4    # Warmup起始学习率
-    min_lr = 1e-6             # 最小学习率
+    layer_decay = 0.75       # Layer-wise LR Decay系数 
+    warmup_start_lr = 1e-6    # Warmup起始学习率
+    min_lr = 1e-7             # 最小学习率
 
     # ==================== 损失函数配置 ====================
-    label_smoothing = 0.1     # 标签平滑
+    # soft label时不起作用
+    label_smoothing = 0.1     # 标签平滑 
+
 
     # 梯度裁剪
     clip_grad = True
@@ -89,7 +93,7 @@ class ViTConfig:
     save_best = True         # 保存最佳模型
     
     # 日志配置
-    log_freq = 1             # 每个batch打印一次
+    log_freq = 10             # 每个batch打印一次
     
     # 随机种子
     seed = 42

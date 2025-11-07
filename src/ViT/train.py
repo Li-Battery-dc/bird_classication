@@ -441,7 +441,7 @@ def train_main():
     
     try:
         for epoch in range(start_epoch, total_epochs + 1):
-            if epoch == 0 and mixup_fn is not None:
+            if epoch == 1 and mixup_fn is not None:
                 logger(f"Using MixUp(alpha={config.mixup_params['mixup_alpha']}) + CutMix(alpha={config.mixup_params['cutmix_alpha']})")
 
             # === Stage切换逻辑 ===
@@ -521,7 +521,7 @@ def train_main():
                     logger(f"  Group {i} ({pg.get('name', 'unknown')}): lr={pg['lr']:.6f}")
             
             # === 更新学习率 ===
-            current_lrs = scheduler.step(epoch - 1)
+            current_lrs = scheduler.step(epoch)
             
             train_loss, train_acc1, train_acc5 = train_one_epoch(
                 model, train_loader, criterion, optimizer, 
