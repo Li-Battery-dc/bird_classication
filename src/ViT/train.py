@@ -52,6 +52,9 @@ def train_one_epoch(
     """
     model.train()
     
+    # 混合精度缩放器（仅在需要时创建一次）
+    scaler = GradScaler(device=device) if is_scale else None
+
     # 每个batch的统计
     loss_list = []
     # 两种准确率
@@ -83,27 +86,31 @@ def train_one_epoch(
             images, labels = mixup_fn(images, labels)
 
         if is_scale:
-            scaler = GradScaler(device=device)
+            # 清空梯度
+            optimizer.zero_grad(set_to_none=True)
             with autocast(device_type=device.type):
                 # 前向传播
                 outputs = model(images)
                 loss = criterion(outputs, labels)
 
-                scaler.scale(loss).backward()
+            # 反向传播（缩放）
+            scaler.scale(loss).backward()
 
-                if config.clip_grad:
-                    scaler.unscale_(optimizer)
-                    torch.nn.utils.clip_grad_norm_(model.parameters(), config.max_grad_norm)
+            # 梯度裁剪
+            if config.clip_grad:
+                scaler.unscale_(optimizer)
+                torch.nn.utils.clip_grad_norm_(model.parameters(), config.max_grad_norm)
 
-                scaler.step(optimizer)
-                scaler.update()
+            # 更新参数
+            scaler.step(optimizer)
+            scaler.update()
         else:
             # 前向传播
             outputs = model(images)
             loss = criterion(outputs, labels)
 
             # 反向传播
-            optimizer.zero_grad()
+            optimizer.zero_grad(set_to_none=True)
             loss.backward()
         
             # 梯度裁剪
@@ -273,11 +280,12 @@ def train_main():
     # 初始冻结backbone
     model.freeze_backbone()
     model.print_trainable_params()
-    
-    # 计算总训练轮数
+
+    # 计算epoch区间
     total_epochs = config.stage1_epochs + config.stage2_epochs + config.stage3_epochs
     stage1_end = config.stage1_epochs
     stage2_end = stage1_end + config.stage2_epochs
+    stage3_end = stage2_end + config.stage3_epochs
     
     logger("\n" + "=" * 80)
     logger("Training Configuration (Continuous Mode)")
@@ -285,25 +293,34 @@ def train_main():
     logger(f"Total Epochs: {total_epochs}")
     logger(f"  - Stage 1 (Head only): Epochs 1-{stage1_end}")
     if config.stage2_epochs > 0:
-        logger(f"  - Stage 2 (Unfreeze {config.stage2_unfreeze_layers} blocks): Epochs {stage1_end+1}-{stage2_end}")
+        logger(f"  - Stage 2 (Unfreeze {config.stage2_unfreeze_layers} blocks): Epochs {stage1_end + 1}-{stage2_end}")
     if config.stage3_epochs > 0:
-        logger(f"  - Stage 3 (Unfreeze {config.stage3_unfreeze_layers} blocks): Epochs {stage2_end+1}-{total_epochs}")
+        logger(f"  - Stage 3 (Unfreeze {config.stage3_unfreeze_layers} blocks): Epochs {stage2_end + 1}-{stage3_end}")
     logger("=" * 80)
     
+    # stage1的初始batch size和is_scale
+    batch_size = config.stage1_batch_size
+    is_scale = False
     # 创建损失函数
     criterion = SmoothingCrossEntropy(smoothing=config.label_smoothing)
     
     # 创建优化器
     # 初始化只包含分类头, 没用get_parameter_groups加scale
+    param_group_1 = get_parameter_groups(
+        model,
+        base_lr=config.stage1_base_lr,
+        layer_decay=config.layer_decay
+    )
     optimizer = optim.AdamW(
-        [{'params': model.head.parameters(), 'lr': config.stage1_base_lr, 'name': 'head'}],
+        param_group_1,
         weight_decay=config.weight_decay,
         betas=config.betas
     )
     scheduler = LRScheduler(
         optimizer,
-        warmup_epochs=config.warmup_epochs,
-        total_epochs=total_epochs,
+        warmup_epochs=config.stage1_warmup_epochs,
+        start_epoch=1,
+        end_epoch=stage1_end,
         base_lr=config.stage1_base_lr,
         min_lr=config.min_lr,
         warmup_start_lr=config.warmup_start_lr,
@@ -339,18 +356,69 @@ def train_main():
                 model.freeze_backbone()
                 batch_size = config.stage1_batch_size
                 is_scale = False
+                # 仅分类头参数组
+                param_groups = [
+                    {'params': model.head.parameters(), 'lr': config.stage1_base_lr, 'name': 'head', 'lr_scale': 1.0}
+                ]
+                # 使用与当前stage匹配的优化器与调度器
+                optimizer = optim.AdamW(
+                    param_groups,
+                    weight_decay=config.weight_decay,
+                    betas=config.betas
+                )
+                scheduler = LRScheduler(
+                    optimizer,
+                    warmup_epochs=config.stage1_warmup_epochs,
+                    start_epoch=1,
+                    end_epoch=stage1_end,
+                    base_lr=config.stage1_base_lr,
+                    min_lr=config.min_lr,
+                    warmup_start_lr=config.warmup_start_lr,
+                    layer_decay=config.layer_decay,
+                    num_layers=model.depth
+                )
             elif current_stage == 2:
                 model.unfreeze_last_n_blocks(config.stage2_unfreeze_layers)
                 batch_size = config.stage2_batch_size
                 is_scale = True
                 param_groups = get_parameter_groups(model, base_lr=config.stage2_base_lr, layer_decay=config.layer_decay)
+                optimizer = optim.AdamW(
+                    param_groups,
+                    weight_decay=config.weight_decay,
+                    betas=config.betas
+                )
+                scheduler = LRScheduler(
+                    optimizer,
+                    warmup_epochs=config.stage2_warmup_epochs,
+                    start_epoch=stage1_end + 1,
+                    end_epoch=stage2_end,
+                    base_lr=config.stage2_base_lr,
+                    min_lr=config.min_lr,
+                    warmup_start_lr=config.warmup_start_lr,
+                    layer_decay=config.layer_decay,
+                    num_layers=model.depth
+                )
             elif current_stage == 3:
                 model.unfreeze_last_n_blocks(config.stage3_unfreeze_layers)
                 batch_size = config.stage3_batch_size
                 is_scale = True
                 param_groups = get_parameter_groups(model, base_lr=config.stage3_base_lr, layer_decay=config.layer_decay)
-
-            optimizer.param_groups = param_groups
+                optimizer = optim.AdamW(
+                    param_groups,
+                    weight_decay=config.weight_decay,
+                    betas=config.betas
+                )
+                scheduler = LRScheduler(
+                    optimizer,
+                    warmup_epochs=config.stage3_warmup_epochs,
+                    start_epoch=stage2_end + 1,
+                    end_epoch=stage3_end,
+                    base_lr=config.stage3_base_lr,
+                    min_lr=config.min_lr,
+                    warmup_start_lr=config.warmup_start_lr,
+                    layer_decay=config.layer_decay,
+                    num_layers=model.depth
+                )
             # 恢复优化器与调度器状态（在参数组对齐之后）
             opt_state = checkpoint_info.get('optimizer_state_dict', None)
             if opt_state is not None:
@@ -359,12 +427,7 @@ def train_main():
                     logger("✓ Optimizer state loaded after aligning param groups")
                 except ValueError as ve:
                     logger(f"⚠ Optimizer state restore skipped (param groups mismatch): {ve}")
-            # 恢复scheduler lr_scales（如存在）
-            sched_state = checkpoint_info.get('scheduler_state', None)
-            if sched_state and 'lr_scales' in sched_state:
-                scheduler.lr_scales = sched_state['lr_scales']
-                logger(f"✓ Scheduler lr_scales restored: {scheduler.lr_scales}")
-
+                    
             logger(f"✓ Resuming from epoch {start_epoch}, stage {current_stage}")
             logger(f"✓ Best accuracy so far: {best_acc:.2f}%")
             logger("=" * 80)
@@ -378,8 +441,6 @@ def train_main():
     
     try:
         for epoch in range(start_epoch, total_epochs + 1):
-            batch_size = config.stage1_batch_size
-            is_scale = False
             if epoch == 0 and mixup_fn is not None:
                 logger(f"Using MixUp(alpha={config.mixup_params['mixup_alpha']}) + CutMix(alpha={config.mixup_params['cutmix_alpha']})")
 
@@ -408,8 +469,9 @@ def train_main():
                 )
                 scheduler = LRScheduler(
                     optimizer,
-                    warmup_epochs=config.warmup_epochs,
-                    total_epochs=total_epochs,
+                    warmup_epochs=config.stage2_warmup_epochs,
+                    start_epoch=stage1_end + 1,
+                    end_epoch=stage2_end,
                     base_lr=config.stage2_base_lr, # 使用阶段2的base_lr
                     min_lr=config.min_lr,
                     warmup_start_lr=config.warmup_start_lr,
@@ -444,8 +506,9 @@ def train_main():
                 )
                 scheduler = LRScheduler(
                     optimizer,
-                    warmup_epochs=config.warmup_epochs,
-                    total_epochs=total_epochs,
+                    warmup_epochs=config.stage3_warmup_epochs,
+                    start_epoch=stage2_end + 1,
+                    end_epoch=stage3_end,
                     base_lr=config.stage3_base_lr, # 使用阶段3的base_lr
                     min_lr=config.min_lr,
                     warmup_start_lr=config.warmup_start_lr,
@@ -503,10 +566,6 @@ def train_main():
                         'stage': current_stage,
                         'model_state_dict': model.state_dict(),
                         'optimizer_state_dict': optimizer.state_dict(),
-                        'scheduler_state': {
-                            'lr_scales': scheduler.lr_scales,
-                            'last_epoch': epoch
-                        },
                         'best_acc': best_acc,
                     },
                     save_dir=save_dir,

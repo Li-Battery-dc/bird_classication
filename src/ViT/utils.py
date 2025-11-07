@@ -124,6 +124,7 @@ def get_val_transforms(config):
 class LRScheduler:
     """
     连续训练的学习率调度器
+    根据epoch区间调整学习率
     Warmup + Cosine Annealing学习率调度器
     Layer-wise Cosine LR Scheduler with Warmup and Layer Decay
     自动按照模型层数调整每层的学习率
@@ -133,7 +134,9 @@ class LRScheduler:
         base_lr: float, 基础学习率(head层)
         min_lr: float, 
         warmup_epochs: int, warmup 轮数
-        total_epochs: int, 总训练轮数
+        start_epoch: int, 训练起始epoch
+        end_epoch: int, 训练结束epoch
+        warmup_start_lr: float, warmup起始学习率 (default=1e-6)
         layer_decay: float, 每层学习率衰减比例 (default=0.75)
         num_layers: int, 模型层数 (default=12)
         last_epoch: int, 上次训练的最后一个epoch (default=-1)
@@ -143,7 +146,8 @@ class LRScheduler:
         self,
         optimizer,
         warmup_epochs: int,
-        total_epochs: int,
+        start_epoch: int,
+        end_epoch: int,
         base_lr: float,
         min_lr: float = 1e-6,
         warmup_start_lr: float = 1e-6,
@@ -152,34 +156,39 @@ class LRScheduler:
     ):
         self.optimizer = optimizer
         self.warmup_epochs = warmup_epochs
-        self.total_epochs = total_epochs
+        self.start_epoch = start_epoch
+        self.end_epoch = end_epoch
+        self.total_epochs = end_epoch - start_epoch + 1
+
         self.base_lr = base_lr
         self.min_lr = min_lr
         self.warmup_start_lr = warmup_start_lr
         self.layer_decay = layer_decay
         self.num_layers = num_layers
         
-        # 逐层scale因子
-        self.layer_scales = [
-            self.layer_decay ** (self.num_layers - i)
-            for i in range(self.num_layers)
-        ]
-        self.layer_scales.append(1.0) # head
+        # 不用了，因为in optimizer param_groups里已经有scale了
+        # # 逐层scale因子
+        # self.layer_scales = [
+        #     self.layer_decay ** (self.num_layers - i)
+        #     for i in range(self.num_layers)
+        # ]
+        # self.layer_scales.append(1.0) # head
 
     def get_lr(self, epoch):
-        # 当前 epoch 的进度比例
-        if epoch < self.warmup_epochs:
+        # 当前 epoch 在区间中的偏移
+        current_epoch_bias = epoch - self.start_epoch
+        if current_epoch_bias < self.warmup_epochs:
             # 线性 warmup
             current_base_lr = self.warmup_start_lr + \
-                (self.base_lr - self.warmup_start_lr) * (epoch / self.warmup_epochs)
+                (self.base_lr - self.warmup_start_lr) * (current_epoch_bias / self.warmup_epochs)
         else:
             # Cosine decay
-            progress = (epoch - self.warmup_epochs) / max(1, self.total_epochs - self.warmup_epochs)
+            progress = (current_epoch_bias - self.warmup_epochs) / max(1, self.total_epochs - self.warmup_epochs)
             cosine_factor = 0.5 * (1 + np.cos(np.pi * progress))
             current_base_lr = self.min_lr + (self.base_lr - self.min_lr) * cosine_factor
 
-        # 按 layer-wise 缩放输出每个 param group 的 lr
-        lrs = [current_base_lr * scale for scale in self.layer_scales[:len(self.optimizer.param_groups)]]
+        # 按每个参数组自身的 lr_scale 字段缩放，避免依赖 param_groups 顺序
+        lrs = [current_base_lr * pg.get('lr_scale', 1.0) for pg in self.optimizer.param_groups]
         return lrs
     
     def step(self, epoch=None):
