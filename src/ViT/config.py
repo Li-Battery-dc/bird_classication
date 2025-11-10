@@ -43,25 +43,25 @@ class ViTConfig:
     resume_from_checkpoint = None
     
     # ==================== 阶段1: 只训练分类头 ====================
-    stage1_epochs = 50
+    stage1_epochs = 30
     stage1_batch_size = 384    
     stage1_warmup_epochs = 5
     stage1_base_lr = 1e-3     # LLRD 的base learning rate
     stage1_freeze_backbone = True  # 冻结backbone
     
     # ==================== 阶段2: 微调后几层 ====================
-    stage2_epochs = 150          # 设为0则不启用该阶段
+    stage2_epochs = 100          # 设为0则不启用该阶段
     stage2_batch_size = 256
     stage2_warmup_epochs = 15
-    stage2_base_lr = 3e-4     # LLRD 的base learning rate
+    stage2_base_lr = 1e-4     # LLRD 的base learning rate
     stage2_unfreeze_layers = 4  # 解冻最后N个Transformer Block
     
     # ==================== 阶段3: 增加微调层数，统一学习率 ====================
-    stage3_epochs = 200
+    stage3_epochs = 150
     stage3_batch_size = 128
     stage3_warmup_epochs = 20
-    stage3_base_lr = 1e-4   
-    stage3_unfreeze_layers = 8  # 阶段3解冻最后N个Transformer Block（默认为6）
+    stage3_base_lr = 3e-5   
+    stage3_unfreeze_layers = 8  # 阶段3解冻最后N个Transformer Block
     
     # ==================== 优化器配置 ====================
     optimizer_type = 'adamw'  # 'adamw' 当前固定，改了这个参数也没用
@@ -72,7 +72,7 @@ class ViTConfig:
     lr_scheduler = 'cosine'   # 当前使用自己实现的固定调度策略， 这个参数不起作用
     layer_decay = 0.75       # Layer-wise LR Decay系数 
     warmup_start_lr = 1e-6    # Warmup起始学习率
-    min_lr = 1e-6             # 最小学习率
+    min_lr = 1e-7             # 最小学习率
 
     # ==================== 损失函数配置 ====================
     # soft label时不起作用
@@ -101,9 +101,9 @@ class ViTConfig:
     # ==================== 数据增强配置 ====================
     # 训练时增强
     mixup_params = {
-        'mixup_alpha': 0.8,
-        'cutmix_alpha': 1.0,
-        'prob': 1.0,
+        'mixup_alpha': 0.2,
+        'cutmix_alpha': 0.0,
+        'prob': 0.5,
         'switch_prob': 0.5
     }
     train_augmentation = {
@@ -116,7 +116,7 @@ class ViTConfig:
         },
         'rand_augment': {
             'n': 2,
-            'm': 9
+            'm': 5
         },
         'random_rotation': 20,
         'normalize': {
@@ -124,7 +124,7 @@ class ViTConfig:
             'std': [0.229, 0.224, 0.225]
         },
         'random_erasing': {
-            'p': 0.25,
+            'p': 0.1,
             'scale': (0.02, 0.2),
             'ratio': (0.3, 3.3),
             'value': 0

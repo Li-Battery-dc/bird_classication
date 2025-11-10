@@ -330,12 +330,14 @@ def accuracy(output: torch.Tensor, target: torch.Tensor, topk=(1,)):
 
         if target.ndim == 2:  # soft label 情况, 训练时使用
             # pred shape: (B, maxk), target shape: (B, num_classes)
+            # 找到每个样本soft label中概率最大的类别（作为真实标签）
+            _, target_class = target.max(dim=1)  # (B,)
+            # 然后按正常方式计算准确率
+            correct = pred.eq(target_class.view(-1, 1).expand_as(pred))
             res = []
             for k in topk:
-                # 对每个样本，取前k个预测类在soft label中的概率总和
-                correct_probs = target.gather(1, pred[:, :k])  # (B, k)
-                acc_k = correct_probs.sum(dim=1).mean() * 100.0  # 平均加权准确率
-                res.append(acc_k.item())
+                correct_k = correct[:, :k].reshape(-1).float().sum(0, keepdim=True)
+                res.append(correct_k.mul_(100.0 / batch_size).item())
             return res
         else:
             # 普通 hard label 情况， 验证时使用

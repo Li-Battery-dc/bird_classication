@@ -309,7 +309,8 @@ def train_main():
     param_group_1 = get_parameter_groups(
         model,
         base_lr=config.stage1_base_lr,
-        layer_decay=config.layer_decay
+        layer_decay=config.layer_decay,
+        weight_decay=config.weight_decay
     )
     optimizer = optim.AdamW(
         param_group_1,
@@ -381,7 +382,10 @@ def train_main():
                 model.unfreeze_last_n_blocks(config.stage2_unfreeze_layers)
                 batch_size = config.stage2_batch_size
                 is_scale = True
-                param_groups = get_parameter_groups(model, base_lr=config.stage2_base_lr, layer_decay=config.layer_decay)
+                param_groups = get_parameter_groups(model, 
+                                                    base_lr=config.stage2_base_lr, 
+                                                    layer_decay=config.layer_decay, 
+                                                    weight_decay=config.weight_decay)
                 optimizer = optim.AdamW(
                     param_groups,
                     weight_decay=config.weight_decay,
@@ -402,7 +406,10 @@ def train_main():
                 model.unfreeze_last_n_blocks(config.stage3_unfreeze_layers)
                 batch_size = config.stage3_batch_size
                 is_scale = True
-                param_groups = get_parameter_groups(model, base_lr=config.stage3_base_lr, layer_decay=config.layer_decay)
+                param_groups = get_parameter_groups(model, 
+                                                    base_lr=config.stage3_base_lr, 
+                                                    layer_decay=config.layer_decay,
+                                                    weight_decay=config.weight_decay)
                 optimizer = optim.AdamW(
                     param_groups,
                     weight_decay=config.weight_decay,
@@ -460,7 +467,8 @@ def train_main():
                 param_group_2 = get_parameter_groups(
                     model,
                     base_lr=config.stage2_base_lr,
-                    layer_decay=config.layer_decay
+                    layer_decay=config.layer_decay,
+                    weight_decay=config.weight_decay
                 )
                 optimizer = optim.AdamW(
                     param_group_2,
@@ -497,7 +505,8 @@ def train_main():
                 param_group_3 = get_parameter_groups(
                     model,
                     base_lr=config.stage3_base_lr,
-                    layer_decay=config.layer_decay
+                    layer_decay=config.layer_decay,
+                    weight_decay=config.weight_decay
                 )
                 optimizer = optim.AdamW(
                     param_group_3,
