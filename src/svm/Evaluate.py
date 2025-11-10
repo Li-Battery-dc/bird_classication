@@ -12,7 +12,7 @@ def test_kernel_with_different_C():
     print("测试不同核函数在不同C值下的性能")
     print("="*70)
     
-    data_root = '../data'
+    data_root = './data'
     train_loader = DataLoader(data_root, split='train', mode='feature')
     
     random.seed(42)
@@ -46,7 +46,7 @@ def test_kernel_with_different_C():
     
     return results
 
-def plot_kernel_C_curves(results, save_path='../result/svm/'):
+def plot_kernel_C_curves(results, save_path='./result/svm/'):
     """绘制不同核函数在不同C值下的曲线对比"""
     # 确保保存路径存在
     os.makedirs(save_path, exist_ok=True)
@@ -96,7 +96,7 @@ def plot_kernel_C_curves(results, save_path='../result/svm/'):
     plt.close()
     # plt.show()
 
-def save_results_to_file(results, save_path='../result/svm/'):
+def save_results_to_file(results, save_path='./result/svm/'):
     """将实验结果保存到文本文件"""
     # 确保保存路径存在
     os.makedirs(save_path, exist_ok=True)
@@ -155,7 +155,7 @@ def save_results_to_file(results, save_path='../result/svm/'):
     return best_config
 
 
-def plot_kernel_C_heatmap(results, save_path='../result/svm/'):
+def plot_kernel_C_heatmap(results, save_path='./result/svm/'):
     """绘制核函数与C值的热力图"""
     # 确保保存路径存在
     os.makedirs(save_path, exist_ok=True)
@@ -200,7 +200,7 @@ def plot_kernel_C_heatmap(results, save_path='../result/svm/'):
 
 if __name__ == "__main__":
     # 设置保存路径
-    save_path = '../result/svm/'
+    save_path = './result/svm/'
     
     # 运行实验
     print("开始运行SVM参数实验...")

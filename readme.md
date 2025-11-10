@@ -57,7 +57,7 @@ SVM 使用 `dataloader.DataLoader` 的特征模式载入预提取特征，默认
 
 ```bash
 python src/main.py svm \
-	--data-root ../data \
+	--data-root ./data \
 	[--kernel {linear,rbf,poly}] \
 	[--C 1.0] \
 	[--gamma scale|<float>] \
@@ -83,7 +83,7 @@ python src/main.py svm \
 
 ```bash
 python src/main.py svm \
-	--data-root ../data \
+	--data-root ./data \
 	--kernel rbf \
 	--gamma 0.1 \
 	--C 4.0 \
@@ -97,7 +97,7 @@ python src/main.py svm \
 
 - `--weight-save-path` 最终权重保存路径（必填）。
 - `--ckpt-load-path` 断点续训时指定已有 checkpoint。
-- `--data-root` 数据集根目录，默认 `../data/`。
+- `--data-root` 数据集根目录，默认 `./data/`。
 - `--freeze / --no-freeze` 控制渐进式冻结策略，默认开启。
 - `--freeze-epoch-ratio` 冻结开始的 epoch 比例，默认 0.75。
 - `--warmup / --no-warmup` 控制 warmup 学习率调度，默认开启。
@@ -110,7 +110,7 @@ python src/main.py svm \
 ```bash
 python src/main.py cnn-train \
 	--weight-save-path result/cnn/weights/resnet_latest.pth \
-	--data-root ../data/ \
+	--data-root ./data/ \
 	--num-epochs 800 \
 	--batch-size 512
 ```
@@ -128,7 +128,7 @@ python src/main.py cnn-train \
 ```bash
 python src/main.py cnn-validate \
 	--weight-path result/cnn/weights/resnet_latest.pth \
-	--data-root ../data/ \
+	--data-root ./data/ \
 	--num-classes 200
 ```
 
@@ -149,7 +149,7 @@ python src/main.py cnn-visualize \
 	--log-file result/cnn/logs/train_log_20251016_172005.txt \
 	--ckpts-dir result/cnn/ckpts/train_20251016_172005 \
 	--result-dir result/cnn \
-	--data-root ../data
+	--data-root ./data
 ```
 
 输出图像保存在 `result_dir/vis_images/train_时间戳/`

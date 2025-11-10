@@ -3,7 +3,7 @@ from dataloader.Dataloader import DataLoader
 import random
 
 def svm_method(
-    data_root: str = '../data',
+    data_root: str = './data',
     *,
     kernel: str = 'linear',
     C: float = 1.0,

@@ -49,7 +49,7 @@ def build_parser() -> argparse.ArgumentParser:
     )
     train_parser.add_argument(
         "--data-root",
-        default="../data/",
+        default="./data/",
         help="Dataset root directory",
     )
     train_parser.add_argument(
@@ -121,7 +121,7 @@ def build_parser() -> argparse.ArgumentParser:
     )
     validate_parser.add_argument(
         "--data-root",
-        default="../data/",
+        default="./data/",
         help="Dataset root directory",
     )
     validate_parser.add_argument(
@@ -149,12 +149,12 @@ def build_parser() -> argparse.ArgumentParser:
     )
     visualize_parser.add_argument(
         "--result-dir",
-        default="../result/cnn",
+        default="./result/cnn",
         help="Base directory for visualization outputs",
     )
     visualize_parser.add_argument(
         "--data-root",
-        default="../data/",
+        default="./data/",
         help="Dataset root directory",
     )
 
@@ -164,7 +164,7 @@ def build_parser() -> argparse.ArgumentParser:
     )
     svm_parser.add_argument(
         "--data-root",
-        default="../data",
+        default="./data",
         help="Dataset root directory",
     )
     svm_parser.add_argument(

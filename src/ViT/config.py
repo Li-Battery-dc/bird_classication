@@ -19,7 +19,7 @@ class ViTConfig:
     mlp_ratio = 4.0           # MLP隐藏层维度倍数 (768*4=3072)
     
     # Regularization
-    dropout = 0.2             # Dropout比例
+    dropout = 0.1             # Dropout比例
     attention_dropout = 0.1   # Attention dropout比例
     drop_path_rate = 0.2      # Stochastic Depth比例
     
@@ -33,17 +33,17 @@ class ViTConfig:
 
     # ==================== 训练配置 ====================
 
-    data_root = '../data/'
-    result_dir = '../result/vit/'
+    data_root = './data/'
+    result_dir = './result/vit/'
 
-    batch_size_val = 128
+    batch_size_val = 256
      
     # ==================== Checkpoint恢复配置 ====================
     # 从checkpoint恢复训练，设置为checkpoint路径，如 'result/vit/train_xxx/ckpt/checkpoint_epoch_10.pth'
     resume_from_checkpoint = None
     
     # ==================== 阶段1: 只训练分类头 ====================
-    stage1_epochs = 30
+    stage1_epochs = 50
     stage1_batch_size = 384    
     stage1_warmup_epochs = 5
     stage1_base_lr = 1e-3     # LLRD 的base learning rate
@@ -72,7 +72,7 @@ class ViTConfig:
     lr_scheduler = 'cosine'   # 当前使用自己实现的固定调度策略， 这个参数不起作用
     layer_decay = 0.75       # Layer-wise LR Decay系数 
     warmup_start_lr = 1e-6    # Warmup起始学习率
-    min_lr = 1e-7             # 最小学习率
+    min_lr = 1e-6             # 最小学习率
 
     # ==================== 损失函数配置 ====================
     # soft label时不起作用
