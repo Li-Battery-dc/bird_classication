@@ -245,7 +245,7 @@ def demo_usage():
     数据加载器使用示例
     """
     # 数据集根目录
-    data_root = '/home/stu12/homework/MLPR/data'
+    data_root = '/home/stu15/homework/bird_classification/data'
     
     # 创建数据加载器
     # loader = DataLoader(data_root, split='train', mode='feature')

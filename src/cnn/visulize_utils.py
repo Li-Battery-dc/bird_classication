@@ -243,7 +243,7 @@ def validation_ckpt_and_visulize(ckpts_dir, data_root, num_classes=200, save_dir
     print("="*60)
 
 
-def compare_training_and_validation(log_file_path, ckpts_dir, data_root, num_classes=200, save_dir="/home/stu12/homework/MLPR/result/cnn/vis_images/"):
+def compare_training_and_validation(log_file_path, ckpts_dir, data_root, num_classes=200, save_dir="../result/cnn/vis_images/"):
     """
     对比训练和验证的 loss 和 accuracy 曲线
     
@@ -369,8 +369,8 @@ def compare_training_and_validation(log_file_path, ckpts_dir, data_root, num_cla
 
 
 def visualizes_all(log_file, ckpts_dir,
-        result_dir = "/home/stu12/homework/MLPR/result/cnn",
-        data_root = "/home/stu12/homework/MLPR/data"):
+        result_dir = "../result/cnn",
+        data_root = "../data"):
     
     # 基础可视化保存目录
     vis_base_dir = os.path.join(result_dir, "vis_images")

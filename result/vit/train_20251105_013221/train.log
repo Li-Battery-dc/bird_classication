@@ -1473,10 +1473,10 @@ LR (head): 0.000140
 LR (backbone): 0.000023
 Entering Stage 3: Unfreezing last 6 blocks
 
-✓ Best model saved: /home/stu12/homework/MLPR/result/vit/train_20251105_013221/best_model.pth
+✓ Best model saved: ../result/vit/train_20251105_013221/best_model.pth
 ✓ Best Acc@1: 51.47%
 
 ================================================================================
 Training Completed!
 ================================================================================
-Results saved to: /home/stu12/homework/MLPR/result/vit/train_20251105_013221
+Results saved to: ../result/vit/train_20251105_013221

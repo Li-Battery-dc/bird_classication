@@ -11,7 +11,7 @@ from .train import train_model
 from .validate import validate_model
 
 def train(weight_save_path, ckpt_load_path=None, 
-          data_root='/home/stu12/homework/MLPR/data/', 
+          data_root='../data/', 
           enable_freeze=True, freeze_epoch_ratio=0.75,
           enable_warmup=True, warmup_ratio=0.1,
           num_classes=200, num_epochs=1000, batch_size=512):
@@ -48,7 +48,7 @@ def train(weight_save_path, ckpt_load_path=None,
                     num_epochs=num_epochs, batch_size=batch_size)
     torch.save(model.state_dict(), weight_save_path)
 
-def validate(weight_path, data_root='/home/stu12/homework/MLPR/data/', num_classes=200):
+def validate(weight_path, data_root='../data/', num_classes=200):
     val_transform = transforms.Compose([
             transforms.Resize(256),
             transforms.CenterCrop(224),

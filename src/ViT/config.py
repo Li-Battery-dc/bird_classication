@@ -33,8 +33,8 @@ class ViTConfig:
 
     # ==================== 训练配置 ====================
 
-    data_root = '/home/stu12/homework/MLPR/data/'
-    result_dir = '/home/stu12/homework/MLPR/result/vit/'
+    data_root = '../data/'
+    result_dir = '../result/vit/'
 
     batch_size_val = 128
      

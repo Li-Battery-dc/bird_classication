@@ -50,7 +50,7 @@ def load_checkpoint(checkpoint_path, model, optimizer):
     return model, optimizer, start_epoch
 
 def train_model(model, data_loader, device, 
-                ckpt_load_path=None, result_dir="/home/stu12/homework/MLPR/result/cnn/", 
+                ckpt_load_path=None, result_dir="../result/cnn/", 
                 enable_freeze=True, freeze_epoch_ratio=0.7,
                 enable_warmup=True, warmup_ratio=0.2,
                 num_epochs=1000, batch_size=256):
