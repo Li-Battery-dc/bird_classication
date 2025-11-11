@@ -236,14 +236,7 @@ def train_main():
             f.write(str(msg) + "\n")
     
     # 数据增强
-    mixup_fn = Mixup(
-        mixup_alpha=config.mixup_params['mixup_alpha'],
-        cutmix_alpha=config.mixup_params['cutmix_alpha'],
-        prob=config.mixup_params['prob'],
-        switch_prob=config.mixup_params['switch_prob'],
-        label_smoothing=config.label_smoothing,
-        num_classes=config.num_classes
-    )
+    mixup_fn = None  # 初始不使用mixup
     train_transform = get_train_transforms(config)
     val_transform = get_val_transforms(config)
 
@@ -357,6 +350,7 @@ def train_main():
                 model.freeze_backbone()
                 batch_size = config.stage1_batch_size
                 is_scale = False
+                mixup_fn = None
                 # 仅分类头参数组
                 param_groups = [
                     {'params': model.head.parameters(), 'lr': config.stage1_base_lr, 'name': 'head', 'lr_scale': 1.0}
@@ -382,6 +376,14 @@ def train_main():
                 model.unfreeze_last_n_blocks(config.stage2_unfreeze_layers)
                 batch_size = config.stage2_batch_size
                 is_scale = True
+                mixup_fn = Mixup(
+                    mixup_alpha=config.stage2_mixup_params['mixup_alpha'],
+                    cutmix_alpha=config.stage2_mixup_params['cutmix_alpha'],
+                    prob=config.stage2_mixup_params['prob'],
+                    switch_prob=config.stage2_mixup_params['switch_prob'],
+                    label_smoothing=config.label_smoothing,
+                    num_classes=config.num_classes
+                )
                 param_groups = get_parameter_groups(model, 
                                                     base_lr=config.stage2_base_lr, 
                                                     layer_decay=config.layer_decay, 
@@ -406,6 +408,14 @@ def train_main():
                 model.unfreeze_last_n_blocks(config.stage3_unfreeze_layers)
                 batch_size = config.stage3_batch_size
                 is_scale = True
+                mixup_fn = Mixup(
+                    mixup_alpha=config.stage3_mixup_params['mixup_alpha'],
+                    cutmix_alpha=config.stage3_mixup_params['cutmix_alpha'],
+                    prob=config.stage3_mixup_params['prob'],
+                    switch_prob=config.stage3_mixup_params['switch_prob'],
+                    label_smoothing=config.label_smoothing,
+                    num_classes=config.num_classes
+                )
                 param_groups = get_parameter_groups(model, 
                                                     base_lr=config.stage3_base_lr, 
                                                     layer_decay=config.layer_decay,
@@ -448,12 +458,20 @@ def train_main():
     
     try:
         for epoch in range(start_epoch, total_epochs + 1):
-            if epoch == 1 and mixup_fn is not None:
-                logger(f"Using MixUp(alpha={config.mixup_params['mixup_alpha']}) + CutMix(alpha={config.mixup_params['cutmix_alpha']})")
-
             # === Stage切换逻辑 ===
             if epoch == stage1_end + 1 and config.stage2_epochs > 0 and current_stage < 2:
                 logger(f"Entering Stage 2: Unfreezing last {config.stage2_unfreeze_layers} blocks")
+                # 第二阶段开始启用mixup
+                logger(f"Using MixUp(alpha={config.stage2_mixup_params['mixup_alpha']}) + CutMix(alpha={config.stage2_mixup_params['cutmix_alpha']})")
+                mixup_fn = Mixup(
+                    mixup_alpha=config.stage2_mixup_params['mixup_alpha'],
+                    cutmix_alpha=config.stage2_mixup_params['cutmix_alpha'],
+                    prob=config.stage2_mixup_params['prob'],
+                    switch_prob=config.stage2_mixup_params['switch_prob'],
+                    label_smoothing=config.label_smoothing,
+                    num_classes=config.num_classes
+                )
+
                 current_stage = 2
                 batch_size = config.stage2_batch_size
                 is_scale = True
@@ -493,6 +511,15 @@ def train_main():
             
             if epoch == stage2_end + 1 and config.stage3_epochs > 0 and current_stage < 3:
                 logger(f"Entering Stage 3: Unfreezing last {config.stage3_unfreeze_layers} blocks")
+                logger(f"Using MixUp(alpha={config.stage3_mixup_params['mixup_alpha']}) + CutMix(alpha={config.stage3_mixup_params['cutmix_alpha']})")
+                mixup_fn = Mixup(
+                    mixup_alpha=config.stage3_mixup_params['mixup_alpha'],
+                    cutmix_alpha=config.stage3_mixup_params['cutmix_alpha'],
+                    prob=config.stage3_mixup_params['prob'],
+                    switch_prob=config.stage3_mixup_params['switch_prob'],
+                    label_smoothing=config.label_smoothing,
+                    num_classes=config.num_classes
+                )
                 current_stage = 3
                 batch_size = config.stage3_batch_size
                 is_scale = True
