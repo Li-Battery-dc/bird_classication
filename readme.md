@@ -5,6 +5,8 @@
 2. **SVM** - 基于传统机器学习的分类器
 3. **ViT (Vision Transformer)** - 基于 timm 预训练模型的微调方法
 
+当前得到的最佳模型文件可从链接[Goole drive](https://drive.google.com/drive/folders/1lrKcYOMkHfuWCtBmdL2otQanBheRIVHN?usp=sharing)中下载
+
 ## 项目目录结构
 
 ```
