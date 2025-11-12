@@ -40,7 +40,7 @@ class ViTConfig:
      
     # ==================== Checkpoint恢复配置 ====================
     # 从checkpoint恢复训练，设置为checkpoint路径，如 'result/vit/train_xxx/ckpt/checkpoint_epoch_10.pth'
-    resume_from_checkpoint = None
+    resume_from_checkpoint = '/scratch/stu15/homework/bird_classification/result/vit/train_20251111_104500/ckpt/checkpoint_epoch_30.pth'
     
     # ==================== 阶段1: 只训练分类头 ====================
     stage1_epochs = 30
@@ -51,26 +51,26 @@ class ViTConfig:
     stage1_mixup_params = None  # 不使用mixup
     
     # ==================== 阶段2: 微调后几层 ====================
-    stage2_epochs = 120          # 设为0则不启用该阶段
+    stage2_epochs = 80          # 设为0则不启用该阶段
     stage2_batch_size = 256
-    stage2_warmup_epochs = 15
-    stage2_base_lr = 2e-4     # LLRD 的base learning rate
+    stage2_warmup_epochs = 10
+    stage2_base_lr = 1e-4     # LLRD 的base learning rate
     stage2_unfreeze_layers = 4  # 解冻最后N个Transformer Block
     stage2_mixup_params = {
         'mixup_alpha': 0.2,
         'cutmix_alpha': 0.0,
-        'prob': 0.2,
+        'prob': 0.25,
         'switch_prob': 0.5
     }
     
-    # ==================== 阶段3: 增加微调层数，统一学习率 ====================
-    stage3_epochs = 200
+    # ==================== 阶段3: 增加微调层数 ====================
+    stage3_epochs = 150
     stage3_batch_size = 128
-    stage3_warmup_epochs = 20
+    stage3_warmup_epochs = 15
     stage3_base_lr = 3e-5   
     stage3_unfreeze_layers = 8  # 阶段3解冻最后N个Transformer Block
     stage3_mixup_params = { # 强mixup
-        'mixup_alpha': 0.3, 
+        'mixup_alpha': 0.2, 
         'cutmix_alpha': 0.0,
         'prob': 0.5,
         'switch_prob': 0.5
