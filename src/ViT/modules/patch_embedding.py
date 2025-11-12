@@ -12,7 +12,7 @@ class PatchEmbedding(nn.Module):
     """
     将图像转换为patch embeddings
     
-    工作流程:
+    pipeline:
     1. 输入图像 (B, C, H, W) - 例如 (32, 3, 224, 224)
     2. 分块 (B, embed_dim, H/P, W/P) - 例如 (32, 768, 14, 14)
     3. 展平patches (B, embed_dim, num_patches) - 例如 (32, 768, 196)

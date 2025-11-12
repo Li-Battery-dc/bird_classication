@@ -16,7 +16,7 @@ class MultiHeadAttention(nn.Module):
         MultiHead(Q, K, V) = Concat(head_1, ..., head_h) W^O
         where head_i = Attention(QW_i^Q, KW_i^K, VW_i^V)
     
-    工作流程:
+    pipeline:
     1. 输入 (B, N, D) 通过三个线性层得到 Q, K, V
     2. 将 Q, K, V 分成多个头 (B, num_heads, N, head_dim) 独立计算 attention
     3. 合并所有头的输出通过输出投影层

@@ -5,3 +5,4 @@ ckpt/
 logs/
 record.md
 train.log
+*.pth
