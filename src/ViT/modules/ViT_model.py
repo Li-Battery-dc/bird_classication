@@ -377,8 +377,8 @@ def create_vit_base_patch16(config=None):
     else:
         # 使用默认值或传入的参数
         num_classes = 200
-        pretrained = True
-        pretrained_model = 'vit_base_patch16_224_in21k'
+        pretrained = False
+        pretrained_model = None
         img_size = 224
         patch_size = 16
         embed_dim = 768

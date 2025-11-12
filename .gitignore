@@ -3,5 +3,5 @@ __pycache__/
 ckpts/
 ckpt/
 logs/
-weights/
 record.md
+train.log

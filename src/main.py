@@ -5,6 +5,8 @@ from svm.Method import svm_method
 from cnn.Method import train as cnn_train
 from cnn.Method import validate as cnn_validate
 from cnn.visulize_utils import visualizes_all
+from ViT.train import train_main as vit_train
+from ViT.visualize import plot_training_curves, visualize_attention
 
 
 def existing_path(path_str: str) -> str:
@@ -209,6 +211,72 @@ def build_parser() -> argparse.ArgumentParser:
         help="Random seed for class sampling",
     )
 
+    # ViT training
+    vit_train_parser = subparsers.add_parser(
+        "vit-train", help="Train Vision Transformer (ViT) model"
+    )
+    vit_train_parser.add_argument(
+        "--config-note",
+        type=str,
+        default="",
+        help="配置说明：请直接修改 src/ViT/config.py 文件来调整训练参数"
+    )
+
+    # ViT visualization
+    vit_vis_parser = subparsers.add_parser(
+        "vit-visualize", help="Visualize ViT training curves or attention maps"
+    )
+    vit_vis_subparsers = vit_vis_parser.add_subparsers(
+        dest="vis_mode", required=True,
+        help="Visualization mode: curves or attention"
+    )
+
+    # ViT curves visualization
+    vit_curves_parser = vit_vis_subparsers.add_parser(
+        "curves", help="Visualize training and validation curves from log"
+    )
+    vit_curves_parser.add_argument(
+        "--log",
+        type=existing_path,
+        required=True,
+        help="Training log file path (e.g., result/vit/train_xxx/train.log)"
+    )
+    vit_curves_parser.add_argument(
+        "--save-dir",
+        type=str,
+        default=None,
+        help="Directory to save visualization (default: same as log file)"
+    )
+
+    # ViT attention visualization
+    vit_attn_parser = vit_vis_subparsers.add_parser(
+        "attention", help="Visualize attention maps for a specific image"
+    )
+    vit_attn_parser.add_argument(
+        "--image",
+        type=existing_path,
+        required=True,
+        help="Input image path"
+    )
+    vit_attn_parser.add_argument(
+        "--model",
+        type=existing_path,
+        required=True,
+        help="Model checkpoint path (e.g., result/vit/train_xxx/ckpt/best_model.pth)"
+    )
+    vit_attn_parser.add_argument(
+        "--layer",
+        type=int,
+        default=-1,
+        help="Transformer layer index (-1 for last layer, 0-11 for specific layer)"
+    )
+    vit_attn_parser.add_argument(
+        "--save-dir",
+        type=str,
+        default=None,
+        help="Directory to save visualization (default: result/vit/vis_images)"
+    )
+
     return parser
 
 
@@ -253,6 +321,23 @@ def main():
             num_classes=args.num_classes,
             seed=args.seed,
         )
+    elif args.command == "vit-train":
+        print("\n" + "=" * 60)
+        print("Vision Transformer (ViT) Training")
+        print("=" * 60)
+        print("⚙️  配置说明: 请直接修改 src/ViT/config.py 文件来调整训练参数")
+        print("=" * 60 + "\n")
+        vit_train()
+    elif args.command == "vit-visualize":
+        if args.vis_mode == "curves":
+            plot_training_curves(args.log, args.save_dir)
+        elif args.vis_mode == "attention":
+            visualize_attention(
+                image_path=args.image,
+                model_path=args.model,
+                layer_idx=args.layer,
+                save_dir=args.save_dir
+            )
     else:
         parser.error("Unknown command")
 
